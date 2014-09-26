@@ -6,7 +6,7 @@ log = logging.getLogger(__name__)
 
 DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__),
                                    '..',
-                                   'pyCloudSim.conf')
+                                   'pycloudsim.conf')
 
 REQUIRED_FIELDS = [
     'log_directory',
