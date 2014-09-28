@@ -15,6 +15,7 @@ class SpecParser():
         self.cpu_freq = None
         self.cores = None
         self.threads = None
+        self.current = None
 
     def __iter__(self):
         return self
@@ -89,10 +90,39 @@ class SpecParser():
         if self.num < 9:
             result, self.num = self.num, self.num + 1
             current_ratio = self.ratios[self.num]
-            result = self.specs_by_ratio[current_ratio]['load']
+            result = self.specs_by_ratio[current_ratio]#['consumption']
+            self.current = result
             return result
         else:
             raise StopIteration()
+
+    def next_consumption(self):
+        return self.next()['consumption']
+
+    def next_ratio(self):
+        self.next()
+        return self.ratios[self.num]
+
+    def next_load(self):
+        return self.next()['load']
+
+    def curr_consumption(self):
+        result = None
+        if self.current is not None:
+            result = self.current['consumption']
+        return result
+
+    def curr_ratio(self):
+        result = None
+        if self.current is not None:
+            result = self.ratios[self.num]
+        return result
+
+    def curr_load(self):
+        result = None
+        if self.current is not None:
+            result = self.current['load']
+        return result
 
     def optimal_load(self):
         return self
