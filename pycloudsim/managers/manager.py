@@ -1,15 +1,25 @@
 from pmmanager import PMManager
 from vmmanager import VMManager
 from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
+from pycloudsim.common import log
 
 class Manager:
     def __init__(self):
+        self.add_physical_hosts_factory = None
+        self.add_physical_hosts_args = None
+        self.add_physical_hosts_callback = None
+        self.add_virtual_machines_factory = None
+        self.add_virtual_machines_args = None
+        self.add_virtual_machines_callback = None
         self.placement = []
         self.total_pm = 0
         self.total_vm = 0
         self.vmm = None
         self.pmm = None
         self.strategy = None
+
+    def set_vm_distributor(self, algorithm, manager):
+        algorithm(manager)
 
     def set_vm_count(self, trace_file, total_vm):
         self.total_vm = total_vm
@@ -21,8 +31,8 @@ class Manager:
 
     def set_strategy(self, strategy):
         self.strategy = strategy
-        if self.base_graph_name:
-            self.strategy.set_base_graph_name(self.base_graph_name)
+        #if self.base_graph_name:
+        #    self.strategy.set_base_graph_name(self.base_graph_name)
         self.strategy.set_vmm(self.vmm)
         self.strategy.pmm = self.pmm
 
@@ -83,3 +93,35 @@ class Manager:
             if host.vms == [] and not host.suspended:
                 result += 1
         return result
+
+    def add_physical_host(self, host):
+        log.info('add_physical_host {}'.format(host))
+        #print('add_physical_host: {}'.format(host))
+
+    def add_physical_hosts(self, host=None):
+        if self.add_physical_hosts_factory:
+            result = self.add_physical_hosts_factory(
+                **self.add_physical_hosts_args)
+            for host in result:
+                self.add_physical_host(host)
+                if self.add_physical_hosts_callback:
+                    self.add_physical_hosts_callback(host)
+        else:
+            self.add_physical_host(host)
+
+    def add_virtual_machine(self, vm):
+        self.vm_list += [vm]
+        import ipdb; ipdb.set_trace() # BREAKPOINT
+        log.info('add_virtual_machine {}'.format(vm))
+        #print('add_virtual_machine: {}'.format(vm))
+
+    def add_virtual_machines(self, vm=None):
+        if self.add_virtual_machines_factory:
+            result = self.add_virtual_machines_factory(
+                **self.add_virtual_machines_args)
+            for vm in result:
+                self.add_virtual_machine(vm)
+                if self.add_virtual_machines_callback:
+                    self.add_virtual_machines_callback(vm)
+        else:
+            self.add_virtual_machines(vm)

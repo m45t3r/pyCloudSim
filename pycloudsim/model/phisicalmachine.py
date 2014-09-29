@@ -1,7 +1,7 @@
 class PhysicalMachine:
     __count__ = 0
     def __init__(self, id):
-        self.id = '%d' % id # self.__count__
+        self.id = '%s' % id # self.__count__
         self.vms = []
         self.startup_machine()
         PhysicalMachine.__count__ += 1

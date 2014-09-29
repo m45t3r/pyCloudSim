@@ -23,7 +23,12 @@ __author__  = "Albert De La Fuente Vigliotti"
 
 
 from pycloudsim.managers.simmanager import Simulator
+from pycloudsim.managers.manager import Manager
+from pycloudsim.model.phisicalmachine import PhysicalMachine
+from pycloudsim.specs.power_ssj2008 import SpecParser
 import argparse
+import logging
+log = logging.getLogger(__name__)
 
 #PROF_DATA = {}
 #
@@ -56,6 +61,85 @@ import argparse
 #    global PROF_DATA
 #    PROF_DATA = {}
 
+
+def host_factory(**kwargs):
+    hostname_list = kwargs['ids']
+    result = []
+    for host in hostname_list:
+#        result += ['host {}'.format(host)]
+#        print('Creating host {}'.format(host))
+        h = PhysicalMachine(host)
+        # FIXME: Specs could be singletons
+        h.specs = SpecParser()
+        # TODO: Fix hardcoded paths
+        h.specs.set_directory('/home/vagrant/research/pycloudsim-simulation/power-models')
+        h.specs.parse('power_ssj2008-20121031-00575.html')
+        # TODO: Parse: and Net
+        h.cpu_freq = h.specs.cpu_freq
+        h.cores = h.specs.cores
+        h.threads = h.specs.threads
+        h.mem = 24*1024
+        h.net = 1000
+    return result
+
+def host_callback(arg):
+    print(arg)
+
+def vm_factory(**kwargs):
+    vms_list = kwargs['ids']
+    flavor = kwargs['flavor']
+    m = kwargs['manager']
+    trace_table = [[
+        'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
+        'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
+        'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
+        'planetlab-workload-traces/20110309/planetlab1_fct_ualg_pt_root'],
+                   [
+        'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
+        'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
+        'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
+        'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root'],
+                   [
+        'planetlab-workload-traces/20110322/planetlab1_williams_edu_uw_oneswarm',
+        'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
+        'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
+        'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root'],
+                   [
+        'planetlab-workload-traces/20110322/planetlab1_williams_edu_uw_oneswarm',
+        'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
+        'planetlab-workload-traces/20110322/planetlab1_williams_edu_uw_oneswarm',
+        'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
+                   ]
+                  ]
+    result = []
+    index = 0
+    for vm in vms_list:
+        result += ['vm {}'.format(vm)]
+        log.info('Creating vm {}, with flavor {}'.format(vm, flavor))
+        import os
+        log.info('The current working directory is {}'.format(os.getcwd()))
+        working_dir = '../'
+        cpu_gen = FileTraceGenerator(working_dir + trace_table[index][0])
+        mem_gen = FileTraceGenerator(working_dir + trace_table[index][1])
+        disk_gen = FileTraceGenerator(working_dir + trace_table[index][2])
+        net_gen = FileTraceGenerator(working_dir + trace_table[index][3])
+        index += 1
+        vmi = VirtualMachineThread(vm, flavor)#, cpu_gen, mem_gen, disk_gen, net_gen)
+        vmi.set_cpu_gen(cpu_gen)
+        vmi.set_mem_gen(mem_gen)
+        vmi.set_disk_gen(disk_gen)
+        vmi.set_net_gen(net_gen)
+        m.add_virtual_machine(vmi)
+#        vmi.start()
+    return result
+
+def vm_distributor_strategy_user(*kwarg, **kwargs):
+    #vms_list = kwargs['vm_distributor_strategy']
+    m = kwarg[0]
+#    m = kwargs['manager']
+
+def vm_callback(arg):
+    print(arg)
 
 def get_default_arg(default_value, arg):
     if arg is None:
@@ -98,6 +182,21 @@ if __name__ == "__main__":
     simulate_ec_net = bool(get_default_arg(0, args.simecnet))
     simulate_ec_net_graph = bool(get_default_arg(0, args.simecnetgraph))
 
+    m = Manager()
+    m.add_physical_hosts_factory = host_factory
+    m.add_physical_hosts_args = {'ids': ['h1', 'h2', 'h3', 'h4']}
+    m.add_physical_hosts_callback = host_callback
+
+    m.add_physical_hosts()
+
+    m.add_virtual_machines_factory = vm_factory
+    m.add_virtual_machines_args = {'ids': ['vm1', 'vm2', 'vm3', 'vm4'], 'flavor': 'small', 'manager': m}
+    m.add_virtual_machines_callback = vm_callback
+    m.vm_distrubutor = m.set_vm_distributor(vm_distributor_strategy_user, m)
+    m.add_virtual_machines()
+    m.start()
+
+    import ipdb; ipdb.set_trace() # BREAKPOINT
     s = Simulator()
 
     pms_scenarios = [pmcount]
