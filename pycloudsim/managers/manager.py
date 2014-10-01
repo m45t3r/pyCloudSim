@@ -17,17 +17,19 @@ class Manager:
         self.vmm = None
         self.pmm = None
         self.strategy = None
+        self.vm_list = []
 
     def set_vm_distributor(self, algorithm, manager):
         algorithm(manager)
 
-    def set_vm_count(self, trace_file, total_vm):
+    #def set_vm_count(self, trace_file, total_vm):
+    def set_vm_count(self, total_vm):
         self.total_vm = total_vm
-        self.vmm = VMManager(trace_file, total_vm)
+#        self.vmm = VMManager(trace_file, total_vm)
 
     def set_pm_count(self, total_pm):
         self.total_pm = total_pm
-        self.pmm = PMManager(total_pm)
+#        self.pmm = PMManager(total_pm)
 
     def set_strategy(self, strategy):
         self.strategy = strategy
@@ -96,6 +98,7 @@ class Manager:
 
     def add_physical_host(self, host):
         log.info('add_physical_host {}'.format(host))
+        self.total_pm += 1
         #print('add_physical_host: {}'.format(host))
 
     def add_physical_hosts(self, host=None):
@@ -111,7 +114,8 @@ class Manager:
 
     def add_virtual_machine(self, vm):
         self.vm_list += [vm]
-        import ipdb; ipdb.set_trace() # BREAKPOINT
+        self.total_vm += 1
+        #import ipdb; ipdb.set_trace() # BREAKPOINT
         log.info('add_virtual_machine {}'.format(vm))
         #print('add_virtual_machine: {}'.format(vm))
 
@@ -124,4 +128,5 @@ class Manager:
                 if self.add_virtual_machines_callback:
                     self.add_virtual_machines_callback(vm)
         else:
+            import ipdb; ipdb.set_trace() # BREAKPOINT
             self.add_virtual_machines(vm)

@@ -3,7 +3,8 @@ from itertools import islice
 from pycloudsim.model.virtualmachine import VirtualMachine
 
 class VMManager:
-    def __init__(self, trace_file, total_vm):
+    #def __init__(self, trace_file, total_vm):
+    def __init__(self, total_vm):
         tg = TraceGenerator(trace_file)
         trace = tg.gen_trace()
         self.items = []

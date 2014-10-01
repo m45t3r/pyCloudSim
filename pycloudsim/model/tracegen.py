@@ -6,9 +6,69 @@ import collections
 
 factor = 1/4
 
+
+class BaseTraceGenerator(object):
+    def __init__(self):
+        self.counter = 0
+
+    def __iter__(self):
+        return self
+
+    # Python 3 compatibility
+    def __next__(self):
+        self.counter += 1
+        return self.next()
+
+    def count(self):
+        return self.counter
+
+
+class FileTraceGenerator(BaseTraceGenerator):
+    def __init__(self, trace_file):
+        super(FileTraceGenerator, self).__init__()
+        self.trace_file = trace_file
+#        with open(self.trace_file) as f:
+#            self.lines = f.readlines()
+#            self.cpu = map(int, self.lines)
+        self.file_handler = open(self.trace_file)
+        self.values = map(int, self.file_handler.readlines())
+        self.file_handler.close()
+        self.counter = 0
+        self.index = 0
+        self.reverse = False
+        self.cycle = False
+
+    def next(self):
+        try:
+            result = self.values[self.index]
+            self.index += 1
+            if self.cycle:
+                self.index = self.cycle % len(self.values)
+            return result
+        except:
+            raise StopIteration()
+
+    def set_reverse(self):
+        self.reverse = True
+        self.values += reversed(self.values)
+
+    def set_cycle(self):
+        self.cycle = True
+
+
+class FunctionTraceGenerator(BaseTraceGenerator):
+    def __init__(self, function, *args, **kwargs):
+        super(FunctionTraceGenerator, self).__init__()
+        self.function = function
+        self.args = args
+        self.kwargs = kwargs
+        self.counter = 0
+
+    def next(self):
+        return self.function(*self.args, **self.kwargs)
+
+
 class TraceGenerator():
-
-
     def __init__(self, fname):
         #fname='planetlab-selected/planetlab-20110420-filtered_pluto_cs_brown_edu_root'
         #fname='planetlab-workload-traces/merkur_planetlab_haw-hamburg_de_ yale_p4p'

@@ -26,6 +26,8 @@ from pycloudsim.managers.simmanager import Simulator
 from pycloudsim.managers.manager import Manager
 from pycloudsim.model.phisicalmachine import PhysicalMachine
 from pycloudsim.specs.power_ssj2008 import SpecParser
+from pycloudsim.model.tracegen import FileTraceGenerator
+from pycloudsim.model.virtualmachine import VirtualMachine
 import argparse
 import logging
 log = logging.getLogger(__name__)
@@ -63,32 +65,36 @@ log = logging.getLogger(__name__)
 
 
 def host_factory(**kwargs):
-    hostname_list = kwargs['ids']
+    pms_list = kwargs['pms']
     result = []
-    for host in hostname_list:
+    for pm in pms_list:
+        pm_id = pm['id']
+        pm_spec = pm['specpower']
 #        result += ['host {}'.format(host)]
 #        print('Creating host {}'.format(host))
-        h = PhysicalMachine(host)
+        h = PhysicalMachine(pm_id)
         # FIXME: Specs could be singletons
         h.specs = SpecParser()
         # TODO: Fix hardcoded paths
-        h.specs.set_directory('/home/vagrant/research/pycloudsim-simulation/power-models')
-        h.specs.parse('power_ssj2008-20121031-00575.html')
+        h.specs.set_directory('../power-models')
+        #h.specs.parse('power_ssj2008-20121031-00575.html')
+        h.specs.parse(pm_spec)
         # TODO: Parse: and Net
         h.cpu_freq = h.specs.cpu_freq
         h.cores = h.specs.cores
         h.threads = h.specs.threads
         h.mem = 24*1024
         h.net = 1000
+        m.add_physical_host(h)
     return result
 
 def host_callback(arg):
     print(arg)
 
 def vm_factory(**kwargs):
-    vms_list = kwargs['ids']
-    flavor = kwargs['flavor']
-    m = kwargs['manager']
+    vms_list = kwargs['vms']
+    #flavor = kwargs['flavor']
+    #m = kwargs['manager']
     trace_table = [[
         'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
         'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
@@ -114,17 +120,29 @@ def vm_factory(**kwargs):
     result = []
     index = 0
     for vm in vms_list:
+        vm_id = vm['id']
+        vm_flavor = vm['flavor']
+        vm_trace = vm['trace']
+        vm_trace_cpu = vm_trace['cpu']
+        vm_trace_mem = vm_trace['mem']
+        vm_trace_disk = vm_trace['disk']
+        vm_trace_net = vm_trace['net']
         result += ['vm {}'.format(vm)]
-        log.info('Creating vm {}, with flavor {}'.format(vm, flavor))
+        log.info('Creating vm {}, with flavor {}'.format(vm_id, vm_flavor))
         import os
         log.info('The current working directory is {}'.format(os.getcwd()))
         working_dir = '../'
-        cpu_gen = FileTraceGenerator(working_dir + trace_table[index][0])
-        mem_gen = FileTraceGenerator(working_dir + trace_table[index][1])
-        disk_gen = FileTraceGenerator(working_dir + trace_table[index][2])
-        net_gen = FileTraceGenerator(working_dir + trace_table[index][3])
+        #cpu_gen = FileTraceGenerator(working_dir + trace_table[index][0])
+        #mem_gen = FileTraceGenerator(working_dir + trace_table[index][1])
+        #disk_gen = FileTraceGenerator(working_dir + trace_table[index][2])
+        #net_gen = FileTraceGenerator(working_dir + trace_table[index][3])
+        cpu_gen = FileTraceGenerator(working_dir + vm_trace_cpu)
+        mem_gen = FileTraceGenerator(working_dir + vm_trace_mem)
+        disk_gen = FileTraceGenerator(working_dir + vm_trace_disk)
+        net_gen = FileTraceGenerator(working_dir + vm_trace_net)
         index += 1
-        vmi = VirtualMachineThread(vm, flavor)#, cpu_gen, mem_gen, disk_gen, net_gen)
+        vmi = VirtualMachine(vm_id, vm_flavor)#, cpu_gen, mem_gen, disk_gen, net_gen)
+        #import ipdb; ipdb.set_trace() # BREAKPOINT
         vmi.set_cpu_gen(cpu_gen)
         vmi.set_mem_gen(mem_gen)
         vmi.set_disk_gen(disk_gen)
@@ -184,21 +202,40 @@ if __name__ == "__main__":
 
     m = Manager()
     m.add_physical_hosts_factory = host_factory
-    m.add_physical_hosts_args = {'ids': ['h1', 'h2', 'h3', 'h4']}
+    m.add_physical_hosts_args = {'pms': [ \
+        {'id': 'h1',
+         'specpower': 'power_ssj2008-20121031-00575.html',
+        }, \
+        {'id': 'h2',
+         'specpower': 'power_ssj2008-20121031-00575.html',
+        }, \
+    ]}
     m.add_physical_hosts_callback = host_callback
 
     m.add_physical_hosts()
 
     m.add_virtual_machines_factory = vm_factory
-    m.add_virtual_machines_args = {'ids': ['vm1', 'vm2', 'vm3', 'vm4'], 'flavor': 'small', 'manager': m}
+    m.add_virtual_machines_args = {'vms': [
+        {'id': 'vm1', 'flavor': 'small', 'trace': {\
+            'cpu': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
+            'mem': 'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
+            'disk': 'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
+            'net': 'planetlab-workload-traces/20110309/planetlab1_fct_ualg_pt_root',
+        }}, \
+        {'id': 'vm2', 'flavor': 'small', 'trace': { \
+            'cpu': 'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
+            'mem': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
+            'disk': 'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
+            'net': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
+        }}, \
+    ]}
+    #m.add_virtual_machines_args = {'ids': ['vm1', 'vm2', 'vm3', 'vm4'], 'flavor': 'small', 'manager': m}
     m.add_virtual_machines_callback = vm_callback
     m.vm_distrubutor = m.set_vm_distributor(vm_distributor_strategy_user, m)
     m.add_virtual_machines()
-    m.start()
+    #m.start()
 
-    import ipdb; ipdb.set_trace() # BREAKPOINT
     s = Simulator()
-
     pms_scenarios = [pmcount]
     vms_scenarios = range(vmstart, vmstop, vmstep)
 
@@ -208,7 +245,7 @@ if __name__ == "__main__":
     if simulate_eu:
         from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
         strategy = EnergyUnawareStrategyPlacement()
-        s.simulate_strategy(strategy, trace_file, pms_scenarios, vms_scenarios)
+        s.simulate_strategy(strategy, m, pms_scenarios, vms_scenarios)
 
     if simulate_ksp:
         from pycloudsim.strategies.iteratedksp import OpenOptStrategyPlacement

@@ -4,6 +4,8 @@ import csv
 import pickle
 import os
 from manager import Manager
+from pycloudsim.managers.vmmanager import VMManager
+from pycloudsim.managers.pmmanager import PMManager
 from pycloudsim.analysis.louvain import *
 
 
@@ -138,17 +140,20 @@ class Simulator:
         except:
             pass
 
-    def simulate_scenario(self, strategy, trace_file, pms, vms):
+    def simulate_scenario(self, strategy, m, pms, vms):
+        import ipdb; ipdb.set_trace() # BREAKPOINT
+        m.vmm = VMManager(vms)
+        m.pmm = PMManager(pms)
         result = {}
         result['start_time'] = time.time()
-        result['manager'] = m = Manager()
+        result['manager'] = m # = Manager()
         result['physical_mahines_count'] = pms
         m.set_pm_count(pms)
         result['virtual_mahines_count'] = vms
-        m.set_vm_count(trace_file, vms)
+        m.set_vm_count(vms)
         result['strategy'] = strategy
-        if self.base_graph_name:
-            m.base_graph_name = self.base_graph_name
+#        if self.base_graph_name:
+#            m.base_graph_name = self.base_graph_name
         m.set_strategy(strategy)
         m.solve_hosts()
         result['placement'] = m.pmm
@@ -163,18 +168,19 @@ class Simulator:
         self.results.append(result)
         return len(self.results)-1
 
-    def simulate_strategy(self, strategy, trace_file, pms_scenarios, vms_scenarios):
+    def simulate_strategy(self, strategy, m, pms_scenarios, vms_scenarios):
+        #pms_scenarios = [m.total_pm]
+        #vms_scenarios = [m.total_vm]
         stamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d-%H%M%S')
         #strategy = EnergyUnawareStrategyPlacement()
-        trace_filename = os.path.basename(trace_file)
+#        trace_filename = os.path.basename(trace_file)
         for pms in pms_scenarios:
-            self.csv_write_simulation('results/simulation-{}-{}-{}-{}.csv'.format(trace_filename, strategy.__class__.__name__, str(pms).zfill(3), stamp))
+#            self.csv_write_simulation('results/simulation-{}-{}-{}-{}.csv'.format(trace_filename, strategy.__class__.__name__, str(pms).zfill(3), stamp))
             for vms in vms_scenarios:
-                self.base_graph_name = 'results/graph-{}-{}-{}-{}-'.format(trace_filename, strategy.__class__.__name__, str(pms).zfill(3), str(vms).zfill(3))
-                scenario = self.simulate_scenario(strategy, trace_file, pms, vms)
-                self.csv_generate_graph(scenario, vms, 'results/graph-{}-{}-{}-{}-{}.csv'.format(trace_filename, strategy.__class__.__name__, str(pms).zfill(3), str(vms).zfill(3), stamp))
-#                self.csv_write_placement(scenario, vms, 'results/placement-{}-{}-{}-{}-{}.csv'.format(trace_filename, strategy.__class__.__name__, str(pms).zfill(3), str(vms).zfill(3), stamp))
-                self.csv_write_placement(scenario, strategy, 'results/summarized-placement-{}-{}-{}-{}-{}.csv'.format(trace_filename, strategy.__class__.__name__, str(pms).zfill(3), str(vms).zfill(3), stamp))
-                self.csv_append_scenario(scenario)
-            self.csv_close_simulation()
-        self.pickle_writer('results/pickle-{}.pkl'.format(stamp))
+#                self.base_graph_name = 'results/graph-{}-{}-{}-{}-'.format(trace_filename, strategy.__class__.__name__, str(pms).zfill(3), str(vms).zfill(3))
+                scenario = self.simulate_scenario(strategy, m, pms, vms)
+#                self.csv_generate_graph(scenario, vms, 'results/graph-{}-{}-{}-{}-{}.csv'.format(trace_filename, strategy.__class__.__name__, str(pms).zfill(3), str(vms).zfill(3), stamp))
+#                self.csv_write_placement(scenario, strategy, 'results/summarized-placement-{}-{}-{}-{}-{}.csv'.format(trace_filename, strategy.__class__.__name__, str(pms).zfill(3), str(vms).zfill(3), stamp))
+#                self.csv_append_scenario(scenario)
+#            self.csv_close_simulation()
+#        self.pickle_writer('results/pickle-{}.pkl'.format(stamp))
