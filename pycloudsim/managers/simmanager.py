@@ -141,9 +141,9 @@ class Simulator:
             pass
 
     def simulate_scenario(self, strategy, m, pms, vms):
-        import ipdb; ipdb.set_trace() # BREAKPOINT
-        m.vmm = VMManager(vms)
-        m.pmm = PMManager(pms)
+#        m.vmm = VMManager(vms)
+#        m.pmm = PMManager(pms)
+        #import ipdb; ipdb.set_trace() # BREAKPOINT
         result = {}
         result['start_time'] = time.time()
         result['manager'] = m # = Manager()

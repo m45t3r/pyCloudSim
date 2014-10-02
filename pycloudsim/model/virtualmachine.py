@@ -6,10 +6,10 @@ class VirtualMachine(dict):
         self.id = id #'%d' % id #VirtualMachine.__count__
         #self.id = str(id)[4:8] #'%d' % VirtualMachine.__count__
         self.value['weight'] = 1
-        #self.value['cpu'] = cpu
-        #self.value['mem'] = mem
-        #self.value['disk'] = disk
-        #self.value['net'] = net
+        self.value['cpu'] = None
+        self.value['mem'] = None
+        self.value['disk'] = None
+        self.value['net'] = None
         self.value['n'] = 1
         self.value['placed'] = 0
         self.value['flavor'] = flavor
@@ -17,15 +17,47 @@ class VirtualMachine(dict):
 
     def set_cpu_gen(self, cpu_gen):
         self.value['cpu_gen'] = cpu_gen
+        self.value['cpu'] = cpu_gen.next()
 
     def set_mem_gen(self, mem_gen):
         self.value['mem_gen'] = mem_gen
+        self.value['mem'] = mem_gen.next()
 
     def set_disk_gen(self, disk_gen):
         self.value['disk_gen'] = disk_gen
+        self.value['disk'] = disk_gen.next()
 
     def set_net_gen(self, net_gen):
         self.value['net_gen'] = net_gen
+        self.value['net'] = net_gen.next()
+
+#    def cpu(self):
+#        result = None
+#        if self.value['cpu'] is None:
+#            self.value['cpu'] = self.value['cpu_gen'].next()
+#        result = self.value['cpu']
+#        return result
+#
+#    def mem(self):
+#        result = None
+#        if self.value['mem'] is None:
+#            self.value['mem'] = self.value['mem_gen'].next()
+#        result = self.value['mem']
+#        return result
+#
+#    def disk(self):
+#        result = None
+#        if self.value['disk'] is None:
+#            self.value['disk'] = self.value['disk_gen'].next()
+#        result = self.value['disk']
+#        return result
+#
+#    def net(self):
+#        result = None
+#        if self.value['net'] is None:
+#            self.value['net'] = self.value['net_gen'].next()
+#        result = self.value['net']
+#        return result
 
     def __str__(self):
         #result = 'VM{}({}, {}, {}, {})'.format(

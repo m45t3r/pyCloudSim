@@ -85,7 +85,8 @@ def host_factory(**kwargs):
         h.threads = h.specs.threads
         h.mem = 24*1024
         h.net = 1000
-        m.add_physical_host(h)
+        result += [h]
+        #m.add_physical_host(h)
     return result
 
 def host_callback(arg):
@@ -127,7 +128,6 @@ def vm_factory(**kwargs):
         vm_trace_mem = vm_trace['mem']
         vm_trace_disk = vm_trace['disk']
         vm_trace_net = vm_trace['net']
-        result += ['vm {}'.format(vm)]
         log.info('Creating vm {}, with flavor {}'.format(vm_id, vm_flavor))
         import os
         log.info('The current working directory is {}'.format(os.getcwd()))
@@ -147,7 +147,8 @@ def vm_factory(**kwargs):
         vmi.set_mem_gen(mem_gen)
         vmi.set_disk_gen(disk_gen)
         vmi.set_net_gen(net_gen)
-        m.add_virtual_machine(vmi)
+        result += [vmi]
+        #m.add_virtual_machine(vmi)
 #        vmi.start()
     return result
 
@@ -201,8 +202,7 @@ if __name__ == "__main__":
     simulate_ec_net_graph = bool(get_default_arg(0, args.simecnetgraph))
 
     m = Manager()
-    m.add_physical_hosts_factory = host_factory
-    m.add_physical_hosts_args = {'pms': [ \
+    m.pmm.add_physical_hosts_args = {'pms': [ \
         {'id': 'h1',
          'specpower': 'power_ssj2008-20121031-00575.html',
         }, \
@@ -210,12 +210,11 @@ if __name__ == "__main__":
          'specpower': 'power_ssj2008-20121031-00575.html',
         }, \
     ]}
-    m.add_physical_hosts_callback = host_callback
+    m.pmm.add_physical_hosts_factory = host_factory
+    m.pmm.add_physical_hosts_callback = host_callback
+    m.pmm.add_physical_hosts()
 
-    m.add_physical_hosts()
-
-    m.add_virtual_machines_factory = vm_factory
-    m.add_virtual_machines_args = {'vms': [
+    m.vmm.add_virtual_machines_args = {'vms': [
         {'id': 'vm1', 'flavor': 'small', 'trace': {\
             'cpu': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
             'mem': 'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
@@ -229,10 +228,10 @@ if __name__ == "__main__":
             'net': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
         }}, \
     ]}
-    #m.add_virtual_machines_args = {'ids': ['vm1', 'vm2', 'vm3', 'vm4'], 'flavor': 'small', 'manager': m}
-    m.add_virtual_machines_callback = vm_callback
+    m.vmm.add_virtual_machines_factory = vm_factory
+    m.vmm.add_virtual_machines_callback = vm_callback
     m.vm_distrubutor = m.set_vm_distributor(vm_distributor_strategy_user, m)
-    m.add_virtual_machines()
+    m.vmm.add_virtual_machines()
     #m.start()
 
     s = Simulator()
