@@ -24,12 +24,13 @@ __author__  = "Albert De La Fuente Vigliotti"
 
 from pycloudsim.managers.simmanager import Simulator
 from pycloudsim.managers.manager import Manager
-from pycloudsim.model.phisicalmachine import PhysicalMachine
+from pycloudsim.model.physicalmachine import PhysicalMachine
 from pycloudsim.specs.power_ssj2008 import SpecParser
 from pycloudsim.model.tracegen import FileTraceGenerator
 from pycloudsim.model.virtualmachine import VirtualMachine
 import argparse
 import logging
+import copy
 log = logging.getLogger(__name__)
 
 #PROF_DATA = {}
@@ -177,7 +178,7 @@ if __name__ == "__main__":
     parser.add_argument('-vma', '--vmstart', help='Start number of VMs (def: 16)', required=False)
     parser.add_argument('-vmo', '--vmstop', help='Stop number of VMs (def: 304)', required=False)
     parser.add_argument('-vme', '--vmstep', help='Increment step number of VMs (def: 16)', required=False)
-    parser.add_argument('-t', '--vmtrace', help='Full path to trace file', required=True)
+#    parser.add_argument('-t', '--vmtrace', help='Full path to trace file', required=True)
     parser.add_argument('-o', '--output', help='Output path', required=True)
     parser.add_argument('-seu', '--simeu', help='Simulate Energy Unaware', required=False)
     parser.add_argument('-sksp', '--simksp', help='Simulate Iterated-KSP', required=False)
@@ -192,7 +193,7 @@ if __name__ == "__main__":
     vmstart = int(get_default_arg(16, args.vmstart))
     vmstop = int(get_default_arg(304, args.vmstop))
     vmstep = int(get_default_arg(16, args.vmstep))
-    trace_file = get_default_arg('planetlab-workload-traces/merkur_planetlab_haw-hamburg_de_yale_p4p', args.vmtrace)
+#    trace_file = get_default_arg('planetlab-workload-traces/merkur_planetlab_haw-hamburg_de_yale_p4p', args.vmtrace)
     output_path = get_default_arg('results/path', args.output)
     simulate_eu = bool(get_default_arg(0, args.simeu))
     simulate_ksp = bool(get_default_arg(0, args.simksp))
@@ -242,44 +243,47 @@ if __name__ == "__main__":
     #pms_scenarios = range(20, 50, 10)
     #vms_scenarios = range(16, 64, 16)
 
+    m_eu = copy.deepcopy(m)
+    m_ksp = copy.deepcopy(m)
+    m_ksp_mem = copy.deepcopy(m)
+    m_ksp_net_graph = copy.deepcopy(m)
+    m_ec = copy.deepcopy(m)
+    m_ec_net = copy.deepcopy(m)
+    m_ec_net_graph = copy.deepcopy(m)
 
     if simulate_eu:
         from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
         strategy = EnergyUnawareStrategyPlacement()
         s.simulate_strategy(strategy, m, pms_scenarios, vms_scenarios)
 
-    import copy
-    m2 = copy.deepcopy(m)
     if simulate_ksp:
         from pycloudsim.strategies.iteratedksp import OpenOptStrategyPlacement
         strategy = OpenOptStrategyPlacement()
-        s.simulate_strategy(strategy, m2, pms_scenarios, vms_scenarios)
-
-    import ipdb; ipdb.set_trace() # BREAKPOINT
+        s.simulate_strategy(strategy, m_ksp, pms_scenarios, vms_scenarios)
 
     if simulate_ksp_mem:
         from pycloudsim.strategies.iteratedkspmem import OpenOptStrategyPlacementMem
         strategy = OpenOptStrategyPlacementMem()
-        s.simulate_strategy(strategy, m, pms_scenarios, vms_scenarios)
+        s.simulate_strategy(strategy, m_ksp_mem, pms_scenarios, vms_scenarios)
 
     if simulate_ksp_net_graph:
         from pycloudsim.strategies.iteratedkspnetgraph import OpenOptStrategyPlacementNetGraph
         strategy = OpenOptStrategyPlacementNetGraph()
-        s.simulate_strategy(strategy, m, pms_scenarios, vms_scenarios)
+        s.simulate_strategy(strategy, m_ksp_net_graph, pms_scenarios, vms_scenarios)
 
     if simulate_ec:
         from pycloudsim.strategies.iteratedec import EvolutionaryComputationStrategyPlacement
         strategy = EvolutionaryComputationStrategyPlacement()
-        s.simulate_strategy(strategy, m, pms_scenarios, vms_scenarios)
+        s.simulate_strategy(strategy, m_ec, pms_scenarios, vms_scenarios)
 
     if simulate_ec_net:
         from pycloudsim.strategies.iteratedecnet import EvolutionaryComputationStrategyPlacementNet
         strategy = EvolutionaryComputationStrategyPlacementNet()
-        s.simulate_strategy(strategy, m, pms_scenarios, vms_scenarios)
+        s.simulate_strategy(strategy, m_ec_net, pms_scenarios, vms_scenarios)
 
     if simulate_ec_net_graph:
         from pycloudsim.strategies.iteratedecnetgraph import EvolutionaryComputationStrategyPlacementNetGraph
         strategy = EvolutionaryComputationStrategyPlacementNetGraph()
-        s.simulate_strategy(strategy, m, pms_scenarios, vms_scenarios)
+        s.simulate_strategy(strategy, m_ec_net_graph, pms_scenarios, vms_scenarios)
 
     print('done')

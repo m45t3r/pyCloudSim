@@ -1,4 +1,4 @@
-from pycloudsim.model.phisicalmachine import PhysicalMachine
+from pycloudsim.model.physicalmachine import PhysicalMachine
 from pycloudsim.common import log
 
 
