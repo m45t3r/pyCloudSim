@@ -15,6 +15,10 @@ class PMManager:
 #    def items(self, numeric_id):
 #        return item_list[numeric_id]
 
+    def set_pm_count(self, total_pm):
+        self.total_pm = total_pm
+#        self.pmm = PMManager(total_pm)
+
     def __str__(self):
         result = 'PMPool['
         for item in self.items:
@@ -25,7 +29,7 @@ class PMManager:
     def add_physical_host(self, host):
         self.items += [host]
         self.total_pm += 1
-        log.info('add_physical_host {}'.format(host))
+        log.info('add_physical_host {}'.format(host.id))
         #print('add_physical_host: {}'.format(host))
 
     def add_physical_hosts(self, host=None):

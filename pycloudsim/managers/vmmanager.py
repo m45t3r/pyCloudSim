@@ -28,6 +28,11 @@ class VMManager:
 #            'net': self.vm_list[numeric_id].net(),
 #        }
 
+    #def set_vm_count(self, trace_file, total_vm):
+    def set_vm_count(self, total_vm):
+        self.total_vm = total_vm
+#        self.vmm = VMManager(trace_file, total_vm)
+
     def get_item_index(self, id):
         result = -1
         i = 0

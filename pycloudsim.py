@@ -90,7 +90,8 @@ def host_factory(**kwargs):
     return result
 
 def host_callback(arg):
-    print(arg)
+    pass
+    #print(arg)
 
 def vm_factory(**kwargs):
     vms_list = kwargs['vms']
@@ -203,10 +204,10 @@ if __name__ == "__main__":
 
     m = Manager()
     m.pmm.add_physical_hosts_args = {'pms': [ \
-        {'id': 'h1',
+        {'id': '1',
          'specpower': 'power_ssj2008-20121031-00575.html',
         }, \
-        {'id': 'h2',
+        {'id': '2',
          'specpower': 'power_ssj2008-20121031-00575.html',
         }, \
     ]}
@@ -215,13 +216,13 @@ if __name__ == "__main__":
     m.pmm.add_physical_hosts()
 
     m.vmm.add_virtual_machines_args = {'vms': [
-        {'id': 'vm1', 'flavor': 'small', 'trace': {\
+        {'id': '1', 'flavor': 'small', 'trace': {\
             'cpu': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
             'mem': 'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
             'disk': 'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
             'net': 'planetlab-workload-traces/20110309/planetlab1_fct_ualg_pt_root',
         }}, \
-        {'id': 'vm2', 'flavor': 'small', 'trace': { \
+    {'id': '2', 'flavor': 'small', 'trace': { \
             'cpu': 'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
             'mem': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
             'disk': 'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
@@ -241,39 +242,44 @@ if __name__ == "__main__":
     #pms_scenarios = range(20, 50, 10)
     #vms_scenarios = range(16, 64, 16)
 
+
     if simulate_eu:
         from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
         strategy = EnergyUnawareStrategyPlacement()
         s.simulate_strategy(strategy, m, pms_scenarios, vms_scenarios)
 
+    import copy
+    m2 = copy.deepcopy(m)
     if simulate_ksp:
         from pycloudsim.strategies.iteratedksp import OpenOptStrategyPlacement
         strategy = OpenOptStrategyPlacement()
-        s.simulate_strategy(strategy, trace_file, pms_scenarios, vms_scenarios)
+        s.simulate_strategy(strategy, m2, pms_scenarios, vms_scenarios)
+
+    import ipdb; ipdb.set_trace() # BREAKPOINT
 
     if simulate_ksp_mem:
         from pycloudsim.strategies.iteratedkspmem import OpenOptStrategyPlacementMem
         strategy = OpenOptStrategyPlacementMem()
-        s.simulate_strategy(strategy, trace_file, pms_scenarios, vms_scenarios)
+        s.simulate_strategy(strategy, m, pms_scenarios, vms_scenarios)
 
     if simulate_ksp_net_graph:
         from pycloudsim.strategies.iteratedkspnetgraph import OpenOptStrategyPlacementNetGraph
         strategy = OpenOptStrategyPlacementNetGraph()
-        s.simulate_strategy(strategy, trace_file, pms_scenarios, vms_scenarios)
+        s.simulate_strategy(strategy, m, pms_scenarios, vms_scenarios)
 
     if simulate_ec:
         from pycloudsim.strategies.iteratedec import EvolutionaryComputationStrategyPlacement
         strategy = EvolutionaryComputationStrategyPlacement()
-        s.simulate_strategy(strategy, trace_file, pms_scenarios, vms_scenarios)
+        s.simulate_strategy(strategy, m, pms_scenarios, vms_scenarios)
 
     if simulate_ec_net:
         from pycloudsim.strategies.iteratedecnet import EvolutionaryComputationStrategyPlacementNet
         strategy = EvolutionaryComputationStrategyPlacementNet()
-        s.simulate_strategy(strategy, trace_file, pms_scenarios, vms_scenarios)
+        s.simulate_strategy(strategy, m, pms_scenarios, vms_scenarios)
 
     if simulate_ec_net_graph:
         from pycloudsim.strategies.iteratedecnetgraph import EvolutionaryComputationStrategyPlacementNetGraph
         strategy = EvolutionaryComputationStrategyPlacementNetGraph()
-        s.simulate_strategy(strategy, trace_file, pms_scenarios, vms_scenarios)
+        s.simulate_strategy(strategy, m, pms_scenarios, vms_scenarios)
 
     print('done')

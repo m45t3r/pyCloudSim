@@ -55,7 +55,7 @@ class Manager:
         return result
 
     def unplaced_vms(self):
-        return self.total_vm - self.placed_vms()
+        return self.vmm.total_vm - self.placed_vms()
 
     def solve_hosts(self):
         for host in self.pmm.items:

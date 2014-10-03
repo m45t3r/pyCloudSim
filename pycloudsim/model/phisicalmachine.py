@@ -4,6 +4,7 @@ class PhysicalMachine:
         self.id = '%s' % id # self.__count__
         self.vms = []
         self.startup_machine()
+        self.specs = None
         PhysicalMachine.__count__ += 1
 
     def startup_machine(self):
@@ -60,17 +61,29 @@ class PhysicalMachine:
         self.startup_machine()
 
     def estimate_consumed_power(self):
+        result = 0
         if self.suspended:
             result = 5
         else:
-            # P(cpu) = P_idle + (P_busy - P_idle) x cpu
-            p_idle = 114.0
-            p_busy = 250.0
-            result = p_idle + (p_busy - p_idle) * self.cpu/100
-            #if self.vms != []:
-            #    p_idle = 114.0
-            #    p_busy = 250.0
-            #    result = p_idle + (p_busy - p_idle) * self.cpu/100
-            #else:
-            #    pass
+            if self.specs is None:
+                # P(cpu) = P_idle + (P_busy - P_idle) x cpu
+                p_idle = 114.0
+                p_busy = 250.0
+                result = p_idle + (p_busy - p_idle) * self.cpu/100
+                #if self.vms != []:
+                #    p_idle = 114.0
+                #    p_busy = 250.0
+                #    result = p_idle + (p_busy - p_idle) * self.cpu/100
+                #else:
+                #    pass
+            else:
+                cpu = self.vms[0]['cpu']
+                cpu_tens = int(str(cpu)[-1])
+                cpu_without_tens = int(str(cpu)[:-1])
+                bottom_cpu = cpu_without_tens * 10
+                bottom_consumption = self.specs.specs_by_load[bottom_cpu]['consumption']
+                top_cpu = cpu_without_tens * 10 + 10
+                top_consumption = self.specs.specs_by_load[top_cpu]['consumption']
+                result = bottom_consumption + \
+                        (top_consumption - bottom_consumption) / 10 * cpu_tens
         return result
