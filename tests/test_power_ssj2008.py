@@ -9,7 +9,7 @@ class TestSpecsSSJ_2008(object):
     def setUp(self):
         self.specs = SpecParser()
         # TODO: Fix hardcoded paths
-        self.specs.set_directory('/home/vagrant/research/pycloudsim-simulation/power-models')
+        self.specs.set_directory('../power-models')
         self.specs.parse('power_ssj2008-20121031-00575.html')
 
     def teardown(self):

@@ -4,6 +4,8 @@
 import fnmatch
 import os
 import csv
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import pylab
 #from matplotlib.font_manager import FontProperties
@@ -78,7 +80,8 @@ class GraphGenerator:
         return result
 
 
-    def algorithms_comparison_figure(self, hosts_scenario, trace_file, case,
+    #def algorithms_comparison_figure(self, hosts_scenario, trace_file, case,
+    def algorithms_comparison_figure(self, hosts_scenario, case,
                  data_ref, data1, data2, data3, data4,
                  x_aspect, y_aspect,
                  x_title, y_title, title):
@@ -156,7 +159,8 @@ class GraphGenerator:
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.14),
             fancybox=True, shadow=True, ncol=2)
 
-        plt.savefig(self.result_dir + '/figure-' + trace_file + '-' +
+        #plt.savefig(self.result_dir + '/figure-' + trace_file + '-' +
+        plt.savefig(self.result_dir + '/figure-' +
             str(hosts_scenario).zfill(3) + '-' +
             title + '-' + case + '.png')
         plt.close()
@@ -166,7 +170,7 @@ class GraphGenerator:
     def algorithms_comparison_figure_cases(self):
         self.algorithms_comparison_figure(
             self.hosts_scenario,
-            self.trace_file,
+            #self.trace_file,
             'best',
             self.data_eu.best_case,
             self.data_ksp.best_case,
@@ -180,7 +184,7 @@ class GraphGenerator:
 
         self.algorithms_comparison_figure(
             self.hosts_scenario,
-            self.trace_file,
+            #self.trace_file,
             'worst',
             self.data_eu.worst_case,
             self.data_ksp.worst_case,
@@ -194,7 +198,7 @@ class GraphGenerator:
 
         self.algorithms_comparison_figure(
             self.hosts_scenario,
-            self.trace_file,
+            #self.trace_file,
             'average',
             self.data_eu.average_case,
             self.data_ksp.average_case,
@@ -309,7 +313,8 @@ class GraphGenerator:
                 l = [item[key]]
         return l
 
-    def plot_all_algorithm_comparison(self, hosts_scenario, trace_file):
+    #def plot_all_algorithm_comparison(self, hosts_scenario, trace_file):
+    def plot_all_algorithm_comparison(self, hosts_scenario):
         #reference = self.get_experiments_file(scenario, 'EnergyUnawareStrategyPlacement')
         #method1 = self.get_experiments_file(scenario, 'OpenOptStrategyPlacement')
         #method2 = self.get_experiments_file(scenario, 'EvolutionaryComputationStrategyPlacement')
@@ -322,7 +327,7 @@ class GraphGenerator:
         #y1b = data1['virtual_machines_unplaced']
 
         self.hosts_scenario = hosts_scenario
-        self.trace_file = trace_file
+        #self.trace_file = trace_file
 
         self.data_eu = self.data['EnergyUnawareStrategyPlacement']
         self.data_ksp = self.data['OpenOptStrategyPlacement']
@@ -331,6 +336,8 @@ class GraphGenerator:
         self.data_eccpu = self.data['EvolutionaryComputationStrategyPlacementNet']
         self.x_key = '#VM'
         self.x_title = 'Number of VMs'
+
+        import ipdb; ipdb.set_trace() # BREAKPOINT
 
         self.y_key = 'KW'
         self.y_title = 'Energy consumed (Watts)'
@@ -628,7 +635,7 @@ class PlacementGraphGenerator:
 #        data_eccpu = self.data_eccpu.data[0][0::self.x_ticks] + [self.data_eccpu.data[0][-1]]
 #        import ipdb; ipdb.set_trace() # BREAKPOINT
         self.algorithms_comparison_figure(
-            self.trace_file,
+            #self.trace_file,
             self.hosts_scenario,
             'best',
             self.data_eu.best_case,
@@ -642,7 +649,7 @@ class PlacementGraphGenerator:
             )
 
         self.algorithms_comparison_figure(
-            self.trace_file,
+            #self.trace_file,
             self.hosts_scenario,
             'worst',
             self.data_eu.worst_case,
@@ -656,7 +663,7 @@ class PlacementGraphGenerator:
             )
 
         self.algorithms_comparison_figure(
-            self.trace_file,
+            #self.trace_file,
             self.hosts_scenario,
             'average',
             self.data_eu.average_case,
@@ -686,12 +693,14 @@ class PlacementGraphGenerator:
                 result[algorithm] += [sum(l) / host_count]
         return result
 
-    def plot_all_algorithm_comparison(self, algorithm_scenarios, trace_scenarios, host_count, vms_count):
+    #def plot_all_algorithm_comparison(self, algorithm_scenarios, trace_scenarios, host_count, vms_count):
+    def plot_all_algorithm_comparison(self, algorithm_scenarios, host_count, vms_count):
         self.hosts_scenario = host_count
         self.vms_scenarios = vms_count
         self.trace_scenarios = trace_scenarios
 
-        self.data = self.get_avg_case_attribute_per_trace_list(algorithm_scenarios, trace_scenarios, host_count, vms_count, 'net')
+        #self.data = self.get_avg_case_attribute_per_trace_list(algorithm_scenarios, trace_scenarios, host_count, vms_count, 'net')
+        self.data = self.get_avg_case_attribute_per_trace_list(algorithm_scenarios, host_count, vms_count, 'net')
 
         # Repetitions
         # repetitions = self.traces_algorithm_data['hybrid4']['EnergyUnawareStrategyPlacement']

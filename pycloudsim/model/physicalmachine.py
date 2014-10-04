@@ -60,6 +60,15 @@ class PhysicalMachine:
     def wol(self):
         self.startup_machine()
 
+    def estimate_used_cpu(self):
+        # Less than 10% => Idle
+        result = 5
+        if len(self.vms) is not 0:
+            result = 0
+            for vm in self.vms:
+                result += vm['cpu']
+        return result
+
     def estimate_consumed_power(self):
         result = 0
         if self.suspended:
@@ -77,13 +86,17 @@ class PhysicalMachine:
                 #else:
                 #    pass
             else:
-                cpu = self.vms[0]['cpu']
-                cpu_tens = int(str(cpu)[-1])
-                cpu_without_tens = int(str(cpu)[:-1])
-                bottom_cpu = cpu_without_tens * 10
-                bottom_consumption = self.specs.specs_by_load[bottom_cpu]['consumption']
-                top_cpu = cpu_without_tens * 10 + 10
-                top_consumption = self.specs.specs_by_load[top_cpu]['consumption']
-                result = bottom_consumption + \
-                        (top_consumption - bottom_consumption) / 10 * cpu_tens
+                cpu = self.estimate_used_cpu()
+                if cpu < 10:
+                    # Idle consumption, when no VMs
+                    result = self.specs.specs_by_load[0]['consumption']
+                else:
+                    cpu_tens = int(str(cpu)[-1])
+                    cpu_without_tens = int(str(cpu)[:-1])
+                    bottom_cpu = cpu_without_tens * 10
+                    bottom_consumption = self.specs.specs_by_load[bottom_cpu]['consumption']
+                    top_cpu = cpu_without_tens * 10 + 10
+                    top_consumption = self.specs.specs_by_load[top_cpu]['consumption']
+                    result = bottom_consumption + \
+                            (top_consumption - bottom_consumption) / 10 * cpu_tens
         return result
