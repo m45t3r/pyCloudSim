@@ -169,6 +169,7 @@ class Simulator:
         return len(self.results)-1
 
     def simulate_strategy(self, strategy, m, pms_scenarios, vms_scenarios):
+        m.copy()
         #pms_scenarios = [m.total_pm]
         #vms_scenarios = [m.total_vm]
         stamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d-%H%M%S')
@@ -178,6 +179,7 @@ class Simulator:
             #self.csv_write_simulation('results/simulation-{}-{}-{}-{}.csv'.format(trace_filename, strategy.__class__.__name__, str(pms).zfill(3), stamp))
             self.csv_write_simulation('results/simulation-{}-{}-{}.csv'.format(strategy.__class__.__name__, str(pms).zfill(3), stamp))
             for vms in vms_scenarios:
+                m.reset()
 #                self.base_graph_name = 'results/graph-{}-{}-{}-{}-'.format(trace_filename, strategy.__class__.__name__, str(pms).zfill(3), str(vms).zfill(3))
                 scenario = self.simulate_scenario(strategy, m, pms, vms)
 #                self.csv_generate_graph(scenario, vms, 'results/graph-{}-{}-{}-{}-{}.csv'.format(trace_filename, strategy.__class__.__name__, str(pms).zfill(3), str(vms).zfill(3), stamp))

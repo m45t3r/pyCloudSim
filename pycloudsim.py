@@ -254,7 +254,7 @@ if __name__ == "__main__":
     if simulate_eu:
         from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
         strategy = EnergyUnawareStrategyPlacement()
-        s.simulate_strategy(strategy, m, pms_scenarios, vms_scenarios)
+        s.simulate_strategy(strategy, m_eu, pms_scenarios, vms_scenarios)
 
     if simulate_ksp:
         from pycloudsim.strategies.iteratedksp import OpenOptStrategyPlacement

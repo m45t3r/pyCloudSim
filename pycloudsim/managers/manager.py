@@ -2,6 +2,7 @@ from pmmanager import PMManager
 from vmmanager import VMManager
 from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
 from pycloudsim.common import log
+import copy
 
 class Manager:
     def __init__(self):
@@ -12,24 +13,26 @@ class Manager:
 #        self.add_virtual_machines_args = None
 #        self.add_virtual_machines_callback = None
         self.placement = []
-        self.total_pm = 0
+#        self.total_pm = 0
 #        self.total_vm = 0
 #        self.vmm = None
         self.pmm = PMManager()
         self.strategy = None
 #        self.vm_list = []
         self.vmm = VMManager()
+        self.pmm_copy = None
+        self.vmm_copy = None
 
     def set_vm_distributor(self, algorithm, manager):
         algorithm(manager)
 
     #def set_vm_count(self, trace_file, total_vm):
-    def set_vm_count(self, total_vm):
-        self.total_vm = total_vm
+#    def set_vm_count(self, total_vm):
+#        self.total_vm = total_vm
 #        self.vmm = VMManager(trace_file, total_vm)
 
-    def set_pm_count(self, total_pm):
-        self.total_pm = total_pm
+#    def set_pm_count(self, total_pm):
+#        self.total_pm = total_pm
 #        self.pmm = PMManager(total_pm)
 
     def set_strategy(self, strategy):
@@ -58,6 +61,12 @@ class Manager:
         return self.vmm.total_vm - self.placed_vms()
 
     def solve_hosts(self):
+        number_pms = self.pmm.total_pm
+        number_vms = self.vmm.total_vm
+        pms_list = self.pmm.items
+        vms_list = self.vmm.items
+        del pms_list[number_pms:]
+        del vms_list[number_vms:]
         for host in self.pmm.items:
             if self.vmm.items != []:
                 solution = self.strategy.solve_host()
@@ -96,6 +105,14 @@ class Manager:
             if host.vms == [] and not host.suspended:
                 result += 1
         return result
+
+    def copy(self):
+        self.pmm_copy = copy.deepcopy(self.pmm)
+        self.vmm_copy = copy.deepcopy(self.vmm)
+
+    def reset(self):
+        self.pmm = copy.deepcopy(self.pmm_copy)
+        self.vmm = copy.deepcopy(self.vmm_copy)
 
 #    def add_physical_host(self, host):
 #        log.info('add_physical_host {}'.format(host))
