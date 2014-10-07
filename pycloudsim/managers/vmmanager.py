@@ -71,7 +71,7 @@ class VMManager:
         self.items += [vm]
         self.total_vm += 1
         #import ipdb; ipdb.set_trace() # BREAKPOINT
-        log.info('add_virtual_machine {}'.format(vm))
+        #log.info('add_virtual_machine {}'.format(vm))
         #print('add_virtual_machine: {}'.format(vm))
 
     def add_virtual_machines(self, vm=None):

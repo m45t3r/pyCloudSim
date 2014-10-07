@@ -29,7 +29,7 @@ class PMManager:
     def add_physical_host(self, host):
         self.items += [host]
         self.total_pm += 1
-        log.info('add_physical_host {}'.format(host.id))
+        #log.info('add_physical_host {}'.format(host.id))
         #print('add_physical_host: {}'.format(host))
 
     def add_physical_hosts(self, host=None):

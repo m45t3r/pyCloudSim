@@ -28,9 +28,12 @@ from pycloudsim.model.physicalmachine import PhysicalMachine
 from pycloudsim.specs.power_ssj2008 import SpecParser
 from pycloudsim.model.tracegen import FileTraceGenerator
 from pycloudsim.model.virtualmachine import VirtualMachine
+import pycloudsim.common as common
 import argparse
 import logging
 import copy
+import json
+import os
 log = logging.getLogger(__name__)
 
 #PROF_DATA = {}
@@ -87,6 +90,7 @@ def host_factory(**kwargs):
         h.mem = 24*1024
         h.net = 1000
         result += [h]
+        log.info('host_factory: Creating PM {}, with specs {}'.format(pm_id, pm_spec))
         #m.add_physical_host(h)
     return result
 
@@ -130,9 +134,6 @@ def vm_factory(**kwargs):
         vm_trace_mem = vm_trace['mem']
         vm_trace_disk = vm_trace['disk']
         vm_trace_net = vm_trace['net']
-        log.info('Creating vm {}, with flavor {}'.format(vm_id, vm_flavor))
-        import os
-        log.info('The current working directory is {}'.format(os.getcwd()))
         working_dir = '../'
         #cpu_gen = FileTraceGenerator(working_dir + trace_table[index][0])
         #mem_gen = FileTraceGenerator(working_dir + trace_table[index][1])
@@ -150,6 +151,7 @@ def vm_factory(**kwargs):
         vmi.set_disk_gen(disk_gen)
         vmi.set_net_gen(net_gen)
         result += [vmi]
+        log.info('vm_factory: Creating VM {}, with flavor {}'.format(vm_id, vm_flavor))
         #m.add_virtual_machine(vmi)
 #        vmi.start()
     return result
@@ -167,6 +169,12 @@ def get_default_arg(default_value, arg):
         return default_value
     else:
         return arg
+
+def load_json(filename):
+    json_data = open(filename)
+    data = json.load(json_data)
+    json_data.close()
+    return data
 
 if __name__ == "__main__":
     # ./ pycloudsim.py -h 72 -vma 16 -vmo 304 -vme 16
@@ -204,32 +212,34 @@ if __name__ == "__main__":
     simulate_ec_net_graph = bool(get_default_arg(0, args.simecnetgraph))
 
     m = Manager()
-    m.pmm.add_physical_hosts_args = {'pms': [ \
-        {'id': '1',
-         'specpower': 'power_ssj2008-20121031-00575.html',
-        }, \
-        {'id': '2',
-         'specpower': 'power_ssj2008-20121031-00575.html',
-        }, \
-    ]}
+    m.pmm.add_physical_hosts_args = load_json('../datacenter/servers.json')
+    #m.pmm.add_physical_hosts_args = {'pms': [ \
+    #    {'id': '1',
+    #     'specpower': 'power_ssj2008-20121031-00575.html',
+    #    }, \
+    #    {'id': '2',
+    #     'specpower': 'power_ssj2008-20121031-00575.html',
+    #    }, \
+    #]}
     m.pmm.add_physical_hosts_factory = host_factory
     m.pmm.add_physical_hosts_callback = host_callback
     m.pmm.add_physical_hosts()
 
-    m.vmm.add_virtual_machines_args = {'vms': [
-        {'id': '1', 'flavor': 'small', 'trace': {\
-            'cpu': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
-            'mem': 'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
-            'disk': 'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
-            'net': 'planetlab-workload-traces/20110309/planetlab1_fct_ualg_pt_root',
-        }}, \
-    {'id': '2', 'flavor': 'small', 'trace': { \
-            'cpu': 'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
-            'mem': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
-            'disk': 'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
-            'net': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
-        }}, \
-    ]}
+    m.vmm.add_virtual_machines_args = load_json('../datacenter/vms.json')
+    #m.vmm.add_virtual_machines_args = {'vms': [
+    #    {'id': '1', 'flavor': 'small', 'trace': {\
+    #        'cpu': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
+    #        'mem': 'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
+    #        'disk': 'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
+    #        'net': 'planetlab-workload-traces/20110309/planetlab1_fct_ualg_pt_root',
+    #    }}, \
+    #{'id': '2', 'flavor': 'small', 'trace': { \
+    #        'cpu': 'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
+    #        'mem': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
+    #        'disk': 'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
+    #        'net': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
+    #    }}, \
+    #]}
     m.vmm.add_virtual_machines_factory = vm_factory
     m.vmm.add_virtual_machines_callback = vm_callback
     m.vm_distrubutor = m.set_vm_distributor(vm_distributor_strategy_user, m)
@@ -243,6 +253,14 @@ if __name__ == "__main__":
     #pms_scenarios = range(20, 50, 10)
     #vms_scenarios = range(16, 64, 16)
 
+    # TODO: Try to pull this out from the pycloudsim leve to the simulation
+    # level
+    config = common.read_and_validate_config()
+    common.init_logging(
+        config['log_directory'],
+        'simulation.log',
+        int(config['log_level']))
+
     m_eu = copy.deepcopy(m)
     m_ksp = copy.deepcopy(m)
     m_ksp_mem = copy.deepcopy(m)
@@ -254,6 +272,7 @@ if __name__ == "__main__":
     if simulate_eu:
         from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
         strategy = EnergyUnawareStrategyPlacement()
+#        log.info('strategy: {}'.format(strategy))
         s.simulate_strategy(strategy, m_eu, pms_scenarios, vms_scenarios)
 
     if simulate_ksp:
@@ -285,5 +304,4 @@ if __name__ == "__main__":
         from pycloudsim.strategies.iteratedecnetgraph import EvolutionaryComputationStrategyPlacementNetGraph
         strategy = EvolutionaryComputationStrategyPlacementNetGraph()
         s.simulate_strategy(strategy, m_ec_net_graph, pms_scenarios, vms_scenarios)
-
     print('done')

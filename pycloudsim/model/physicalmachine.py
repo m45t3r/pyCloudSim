@@ -33,7 +33,7 @@ class PhysicalMachine:
             result += str(vm) + ', '
         return result
 
-    def __str__(self):
+    def to_full_string(self):
         if self.suspended:
             state = 'sus'
         else:
@@ -48,6 +48,12 @@ class PhysicalMachine:
             self.net,
             len(self.vms),
             self.vms_to_str())
+        return result
+
+    def __str__(self):
+        result = 'PM{}'.format(
+            self.id,
+            )
         return result
 
     def suspend(self):

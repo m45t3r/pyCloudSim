@@ -3,6 +3,8 @@ from vmmanager import VMManager
 from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
 from pycloudsim.common import log
 import copy
+import logging
+log = logging.getLogger(__name__)
 
 class Manager:
     def __init__(self):
@@ -48,6 +50,7 @@ class Manager:
             vm = vms[i]
             host.place_vm(vm)
             print('{}'.format(host))
+            log.info('place_vms: Placing VM {}, on host {}'.format(vm, host))
             i += 1
         self.vmm.items_remove(vms)
 
@@ -77,7 +80,7 @@ class Manager:
             else:
                 if not isinstance(self.strategy, EnergyUnawareStrategyPlacement):
                     host.suspend()
-                print(host)
+                #print(host)
 
     def calculate_power_consumed(self):
         result = 0

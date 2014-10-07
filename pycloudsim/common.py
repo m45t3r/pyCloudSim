@@ -3,43 +3,42 @@ import time
 import json
 
 import logging
-log = logging.getLogger(__name__)
+from pycloudsim.config import *
 
-
-def start(init_state, execute, config, time_interval, iterations=-1):
-    """ Start the processing loop.
-
-    :param init_state: A function accepting a config and
-                       returning a state dictionary.
-     :type init_state: function
-
-    :param execute: A function performing the processing at each iteration.
-     :type execute: function
-
-    :param config: A config dictionary.
-     :type config: dict(str: *)
-
-    :param time_interval: The time interval to wait between iterations.
-     :type time_interval: int
-
-    :param iterations: The number of iterations to perform, -1 for infinite.
-     :type iterations: int
-
-    :return: The final state.
-     :rtype: dict(str: *)
-    """
-    state = init_state(config)
-
-    if iterations == -1:
-        while True:
-            state = execute(config, state)
-            time.sleep(time_interval)
-    else:
-        for _ in xrange(iterations):
-            state = execute(config, state)
-            time.sleep(time_interval)
-
-    return state
+#def start(init_state, execute, config, time_interval, iterations=-1):
+#    """ Start the processing loop.
+#
+#    :param init_state: A function accepting a config and
+#                       returning a state dictionary.
+#     :type init_state: function
+#
+#    :param execute: A function performing the processing at each iteration.
+#     :type execute: function
+#
+#    :param config: A config dictionary.
+#     :type config: dict(str: *)
+#
+#    :param time_interval: The time interval to wait between iterations.
+#     :type time_interval: int
+#
+#    :param iterations: The number of iterations to perform, -1 for infinite.
+#     :type iterations: int
+#
+#    :return: The final state.
+#     :rtype: dict(str: *)
+#    """
+#    state = init_state(config)
+#
+#    if iterations == -1:
+#        while True:
+#            state = execute(config, state)
+#            time.sleep(time_interval)
+#    else:
+#        for _ in xrange(iterations):
+#            state = execute(config, state)
+#            time.sleep(time_interval)
+#
+#    return state
 
 def init_logging(log_directory, log_file, log_level):
     if log_level == 0:
@@ -108,3 +107,7 @@ def parse_parameters(params):
     """
     return dict((str(k), v)
                 for k, v in json.loads(params).items())
+
+
+log = logging.getLogger(__name__)
+
