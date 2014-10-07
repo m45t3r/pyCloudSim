@@ -225,7 +225,7 @@ if __name__ == "__main__":
     m.pmm.add_physical_hosts_callback = host_callback
     m.pmm.add_physical_hosts()
 
-    m.vmm.add_virtual_machines_args = load_json('../datacenter/vms.json')
+    m.vmm.add_virtual_machines_args = load_json('../datacenter/vms-mean-30-40.json')
     #m.vmm.add_virtual_machines_args = {'vms': [
     #    {'id': '1', 'flavor': 'small', 'trace': {\
     #        'cpu': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',

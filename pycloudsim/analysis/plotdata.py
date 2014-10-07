@@ -337,11 +337,9 @@ class GraphGenerator:
         self.x_key = '#VM'
         self.x_title = 'Number of VMs'
 
-        import ipdb; ipdb.set_trace() # BREAKPOINT
-
         self.y_key = 'KW'
-        self.y_title = 'Energy consumed (Watts)'
-        self.title = 'Energy consumption comparison'
+        self.y_title = 'Power consumed (Watts)'
+        self.title = 'Power consumption comparison'
         self.algorithms_comparison_figure_cases()
 
         self.y_key = 'T'
@@ -389,8 +387,8 @@ class GraphGenerator:
         self.x_title = 'Number of VMs'
 
         self.y_key = 'KW'
-        self.y_title = 'Energy consumed (Watts) 95% C.I.'
-        self.title = 'Energy consumption - 95 percent C.I.' #'Energy consumption - 95% Confidence Interval for 30 simulations'
+        self.y_title = 'Power consumed (Watts) 95% C.I.'
+        self.title = 'Power consumption - 95 percent C.I.' #'Energy consumption - 95% Confidence Interval for 30 simulations'
         self.algorithms_confidence_interval_figure_cases()
 
         self.y_key = 'T'
