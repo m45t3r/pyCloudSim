@@ -3,14 +3,15 @@ class PhysicalMachine:
     def __init__(self, id):
         self.id = '%s' % id # self.__count__
         self.vms = []
-        self.startup_machine()
         self.specs = None
+        self.startup_machine()
         PhysicalMachine.__count__ += 1
 
     def startup_machine(self):
-        self.cpu = 15
-        self.mem = 15
-        self.disk = self.net = 0
+        self.cpu = 0
+        self.mem = 0
+        self.disk = 0
+        self.net = 0
         self.suspended = False
 
     def consumed_power(self):
@@ -19,13 +20,21 @@ class PhysicalMachine:
     def place_vm(self, vm):
         self.vms.append(vm)
         vm.value['placed'] = 1
-        self.cpu = self.mem = 0
-        self.disk = self.net = 0
-        for vm in self.vms:
-            self.cpu += vm.value['cpu']
-            self.mem += vm.value['mem']
-            self.disk += vm.value['disk']
-            self.net += vm.value['net']
+#        self.cpu = self.mem = 0
+#        self.disk = self.net = 0
+#        for vm in self.vms:
+        self.cpu += vm.value['cpu']
+        self.mem += vm.value['mem']
+        self.disk += vm.value['disk']
+        self.net += vm.value['net']
+
+    def available_resources(self):
+        return [
+            100 - self.cpu,
+            100 - self.mem,
+            100 - self.disk,
+            100 - self.net,
+        ]
 
     def vms_to_str(self):
         result = ''

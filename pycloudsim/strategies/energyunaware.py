@@ -21,8 +21,11 @@ class EnergyUnawareStrategyPlacement:
         total_mem = sum(map(operator.itemgetter('mem'), item_list))
         total_disk = sum(map(operator.itemgetter('disk'), item_list))
         total_net = sum(map(operator.itemgetter('net'), item_list))
-        return (total_cpu < 100) and (total_mem < 100) and \
-            (total_disk < 100) and (total_net < 100)
+        return \
+            total_cpu < self.available_cpu and \
+            total_mem < self.available_mem and \
+            total_disk < self.available_disk and \
+            total_net < self.available_net
 
     def get_vm_objects(self, items_list):
         return items_list
@@ -34,9 +37,13 @@ class EnergyUnawareStrategyPlacement:
     def set_base_graph_name(self, base_graph_name):
         self.base_graph_name = base_graph_name
 
-    def solve_host(self):
+    def solve_host(self, upper_bounds):
         result = []
         items_list = []
+        self.available_cpu = upper_bounds[0]
+        self.available_mem = upper_bounds[1]
+        self.available_disk = upper_bounds[2]
+        self.available_net = upper_bounds[3]
         more = True
         #tmp = self.vmm.items.copy()
         tmp = copy.deepcopy(self.vmm.items)

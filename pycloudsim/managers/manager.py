@@ -72,11 +72,27 @@ class Manager:
         del vms_list[number_vms:]
         for host in self.pmm.items:
             if self.vmm.items != []:
-                solution = self.strategy.solve_host()
-                vms = self.strategy.get_vm_objects(solution)
-                #import ipdb; ipdb.set_trace() # BREAKPOINT
-                if vms is not None:
-                    self.place_vms(vms, host)
+                available_resources = host.available_resources()
+                compute_resources = available_resources
+                non_linear = True
+                skip = False
+                if non_linear:
+                    import ipdb; ipdb.set_trace() # BREAKPOINT
+                    optimal_cpu = host.specs.optimal_load().next()['load']
+                    optimal_cpu_diff = available_resources[0] - optimal_cpu
+                    skip = optimal_cpu <= 0
+                    if not skip:
+                        compute_resources[0] = [
+                            optimal_cpu_diff,
+                            available_resources[1],
+                            available_resources[2],
+                            available_resources[3],
+                        ]
+                if not skip:
+                    solution = self.strategy.solve_host(compute_resources)
+                    vms = self.strategy.get_vm_objects(solution)
+                    if vms is not None:
+                        self.place_vms(vms, host)
             else:
                 if not isinstance(self.strategy, EnergyUnawareStrategyPlacement):
                     host.suspend()

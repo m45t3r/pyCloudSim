@@ -87,8 +87,8 @@ def host_factory(**kwargs):
         h.cpu_freq = h.specs.cpu_freq
         h.cores = h.specs.cores
         h.threads = h.specs.threads
-        h.mem = 24*1024
-        h.net = 1000
+        h.memory = 24*1024
+        h.network = 1000
         result += [h]
         log.info('host_factory: Creating PM {}, with specs {}'.format(pm_id, pm_spec))
         #m.add_physical_host(h)
@@ -280,28 +280,28 @@ if __name__ == "__main__":
         strategy = OpenOptStrategyPlacement()
         s.simulate_strategy(strategy, m_ksp, pms_scenarios, vms_scenarios)
 
-    if simulate_ksp_mem:
-        from pycloudsim.strategies.iteratedkspmem import OpenOptStrategyPlacementMem
-        strategy = OpenOptStrategyPlacementMem()
-        s.simulate_strategy(strategy, m_ksp_mem, pms_scenarios, vms_scenarios)
-
-    if simulate_ksp_net_graph:
-        from pycloudsim.strategies.iteratedkspnetgraph import OpenOptStrategyPlacementNetGraph
-        strategy = OpenOptStrategyPlacementNetGraph()
-        s.simulate_strategy(strategy, m_ksp_net_graph, pms_scenarios, vms_scenarios)
-
-    if simulate_ec:
-        from pycloudsim.strategies.iteratedec import EvolutionaryComputationStrategyPlacement
-        strategy = EvolutionaryComputationStrategyPlacement()
-        s.simulate_strategy(strategy, m_ec, pms_scenarios, vms_scenarios)
-
-    if simulate_ec_net:
-        from pycloudsim.strategies.iteratedecnet import EvolutionaryComputationStrategyPlacementNet
-        strategy = EvolutionaryComputationStrategyPlacementNet()
-        s.simulate_strategy(strategy, m_ec_net, pms_scenarios, vms_scenarios)
-
-    if simulate_ec_net_graph:
-        from pycloudsim.strategies.iteratedecnetgraph import EvolutionaryComputationStrategyPlacementNetGraph
-        strategy = EvolutionaryComputationStrategyPlacementNetGraph()
-        s.simulate_strategy(strategy, m_ec_net_graph, pms_scenarios, vms_scenarios)
+#    if simulate_ksp_mem:
+#        from pycloudsim.strategies.iteratedkspmem import OpenOptStrategyPlacementMem
+#        strategy = OpenOptStrategyPlacementMem()
+#        s.simulate_strategy(strategy, m_ksp_mem, pms_scenarios, vms_scenarios)
+#
+#    if simulate_ksp_net_graph:
+#        from pycloudsim.strategies.iteratedkspnetgraph import OpenOptStrategyPlacementNetGraph
+#        strategy = OpenOptStrategyPlacementNetGraph()
+#        s.simulate_strategy(strategy, m_ksp_net_graph, pms_scenarios, vms_scenarios)
+#
+#    if simulate_ec:
+#        from pycloudsim.strategies.iteratedec import EvolutionaryComputationStrategyPlacement
+#        strategy = EvolutionaryComputationStrategyPlacement()
+#        s.simulate_strategy(strategy, m_ec, pms_scenarios, vms_scenarios)
+#
+#    if simulate_ec_net:
+#        from pycloudsim.strategies.iteratedecnet import EvolutionaryComputationStrategyPlacementNet
+#        strategy = EvolutionaryComputationStrategyPlacementNet()
+#        s.simulate_strategy(strategy, m_ec_net, pms_scenarios, vms_scenarios)
+#
+#    if simulate_ec_net_graph:
+#        from pycloudsim.strategies.iteratedecnetgraph import EvolutionaryComputationStrategyPlacementNetGraph
+#        strategy = EvolutionaryComputationStrategyPlacementNetGraph()
+#        s.simulate_strategy(strategy, m_ec_net_graph, pms_scenarios, vms_scenarios)
     print('done')
