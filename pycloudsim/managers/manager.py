@@ -2,6 +2,7 @@ from pmmanager import PMManager
 from vmmanager import VMManager
 from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
 from pycloudsim.common import log
+import pycloudsim.common as common
 import copy
 import logging
 log = logging.getLogger(__name__)
@@ -50,7 +51,9 @@ class Manager:
             vm = vms[i]
             host.place_vm(vm)
             print('{}'.format(host))
-            log.info('place_vms: Placing VM {}, on host {}'.format(vm, host))
+            resources = vm.resources_to_list()
+            power = host.estimate_consumed_power()
+            log.info('  + VM {} resources: {} (power: {})'.format(vm, resources, power))
             i += 1
         self.vmm.items_remove(vms)
 
@@ -71,26 +74,39 @@ class Manager:
         del pms_list[number_pms:]
         del vms_list[number_vms:]
         for host in self.pmm.items:
+            log.info('--- Placing VMS on host {}'.format(host))
             if self.vmm.items != []:
                 available_resources = host.available_resources()
                 compute_resources = available_resources
-                non_linear = False
+                log.info('Host available resources: {}'.format(available_resources))
+                non_linear = common.config['non_linear'].lower() == 'true'
                 skip = False
                 if non_linear:
+                    log.info('OPTIMIZATION: Non-linear')
                     optimal_cpu = host.specs.optimal_load().next()['load']
                     optimal_cpu = host.specs.optimal_load().next()['load']
-                    optimal_cpu_diff = available_resources[0] - optimal_cpu
                     skip = host.cpu >= optimal_cpu
                     if not skip:
                         compute_resources[0] = optimal_cpu
+                        log.info('Optimal CPU value is: {}'.format(optimal_cpu))
+                        log.info('Current CPU value is: {}'.format(host.cpu))
+                        log.info('Setting up computing resources to: {}'.format(compute_resources))
+                    else:
+                        log.info('CPU threshold bigger than optimal, skipping this host')
+                else:
+                    log.info('OPTIMIZATION: Linear (maximizing VMs per host)')
+
                 if not skip:
                     solution = self.strategy.solve_host(compute_resources)
                     vms = self.strategy.get_vm_objects(solution)
                     if vms is not None:
                         self.place_vms(vms, host)
+                        available_resources = host.available_resources()
+                        log.info('Host available resources after placement: {}'.format(available_resources))
             else:
                 if not isinstance(self.strategy, EnergyUnawareStrategyPlacement):
                     host.suspend()
+                    log.info('Suspending host: {}'.format(host))
                 #print(host)
 
     def calculate_power_consumed(self):

@@ -70,6 +70,14 @@ class VirtualMachine(dict):
             )
         return result
 
+    def resources_to_list(self):
+        return [
+            self.value['cpu'],
+            self.value['mem'],
+            self.value['disk'],
+            self.value['net']
+        ]
+
     def __getitem__(self, attribute):
         # http://stackoverflow.com/questions/5818192/getting-field-names-reflectively-with-python
         # val = getattr(ob, attr)

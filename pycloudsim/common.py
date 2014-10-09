@@ -110,4 +110,5 @@ def parse_parameters(params):
 
 
 log = logging.getLogger(__name__)
+config = None
 

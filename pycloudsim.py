@@ -74,7 +74,6 @@ log = logging.getLogger(__name__)
 #    global PROF_DATA
 #    PROF_DATA = {}
 
-
 def host_factory(**kwargs):
     pms_list = kwargs['pms']
     result = []
@@ -87,7 +86,8 @@ def host_factory(**kwargs):
         # FIXME: Specs could be singletons
         h.specs = SpecParser()
         # TODO: Fix hardcoded paths
-        h.specs.set_directory('../power-models')
+        specs_directory = common.config['specs_directory']
+        h.specs.set_directory(specs_directory)
         #h.specs.parse('power_ssj2008-20121031-00575.html')
         h.specs.parse(pm_spec)
         # TODO: Parse: and Net
@@ -114,23 +114,23 @@ def vm_factory(**kwargs):
         'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
         'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
         'planetlab-workload-traces/20110309/planetlab1_fct_ualg_pt_root'],
-                   [
+                [
         'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
         'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
         'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
         'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root'],
-                   [
+                [
         'planetlab-workload-traces/20110322/planetlab1_williams_edu_uw_oneswarm',
         'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
         'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
         'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root'],
-                   [
+                [
         'planetlab-workload-traces/20110322/planetlab1_williams_edu_uw_oneswarm',
         'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
         'planetlab-workload-traces/20110322/planetlab1_williams_edu_uw_oneswarm',
         'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
-                   ]
-                  ]
+                ]
+                ]
     result = []
     index = 0
     for vm in vms_list:
@@ -165,151 +165,178 @@ def vm_factory(**kwargs):
 
 def vm_distributor_strategy_user(*kwarg, **kwargs):
     #vms_list = kwargs['vm_distributor_strategy']
-    m = kwarg[0]
+    pass
 #    m = kwargs['manager']
 
 def vm_callback(arg):
     print(arg)
 
-def get_default_arg(default_value, arg):
-    if arg is None:
-        return default_value
-    else:
-        return arg
 
-def load_json(filename):
-    json_data = open(filename)
-    data = json.load(json_data)
-    json_data.close()
-    return data
+class pycloudsim():
+    def __init__(self):
+        pass
+
+    def get_default_arg(self, default_value, arg):
+        if arg is None:
+            return default_value
+        else:
+            return arg
+
+    def load_json(self, filename):
+        json_data = open(filename)
+        data = json.load(json_data)
+        json_data.close()
+        return data
+
+    def parse_args(self):
+        parser = argparse.ArgumentParser(description='A VM distribution/placement simulator.')
+        parser.add_argument('-pm', '--pmcount', help='Number of physical machines', required=False)
+        parser.add_argument('-vma', '--vmstart', help='Start number of VMs (def: 16)', required=False)
+        parser.add_argument('-vmo', '--vmstop', help='Stop number of VMs (def: 304)', required=False)
+        parser.add_argument('-vme', '--vmstep', help='Increment step number of VMs (def: 16)', required=False)
+    #    parser.add_argument('-t', '--vmtrace', help='Full path to trace file', required=True)
+        parser.add_argument('-o', '--output', help='Output path', required=True)
+        parser.add_argument('-seu', '--simeu', help='Simulate Energy Unaware', required=False)
+        parser.add_argument('-sksp', '--simksp', help='Simulate Iterated-KSP', required=False)
+        parser.add_argument('-skspmem', '--simkspmem', help='Simulate Iterated-KSP-CPU', required=False)
+        parser.add_argument('-skspnetgraph', '--simkspnetgraph', help='Simulate Iterated-KSP-Net-Graph', required=False)
+        parser.add_argument('-sec', '--simec', help='Simulate Iterated-EC', required=False)
+        parser.add_argument('-secnet', '--simecnet', help='Simulate Iterated-EC-Net', required=False)
+        parser.add_argument('-secnetgraph', '--simecnetgraph', help='Simulate Iterated-EC-Net-Graph', required=False)
+        args = parser.parse_args()
+
+        self.pmcount = int(self.get_default_arg(72, args.pmcount))
+        self.vmstart = int(self.get_default_arg(16, args.vmstart))
+        self.vmstop = int(self.get_default_arg(304, args.vmstop))
+        self.vmstep = int(self.get_default_arg(16, args.vmstep))
+    #   self. trace_file = get_default_arg('planetlab-workload-traces/merkur_planetlab_haw-hamburg_de_yale_p4p', args.vmtrace)
+        self.output_path = self.get_default_arg('results/path', args.output)
+        self.simulate_eu = bool(self.get_default_arg(0, args.simeu))
+        self.simulate_ksp = bool(self.get_default_arg(0, args.simksp))
+        self.simulate_ksp_mem = bool(self.get_default_arg(0, args.simkspmem))
+        self.simulate_ksp_net_graph = bool(self.get_default_arg(0, args.simkspnetgraph))
+        self.simulate_ec = bool(self.get_default_arg(0, args.simec))
+        self.simulate_ec_net = bool(self.get_default_arg(0, args.simecnet))
+        self.simulate_ec_net_graph = bool(self.get_default_arg(0, args.simecnetgraph))
+
+    def run(self):
+        # TODO: Try to pull this out from the pycloudsim leve to the simulation
+        # level
+        import ipdb; ipdb.set_trace() # BREAKPOINT
+        config = common.read_and_validate_config()
+        common.config = config
+        log_dir = os.path.abspath(config['log_directory'])
+        common.init_logging(
+            log_dir,
+            'simulation.log',
+            int(config['log_level']))
+
+        self.parse_args()
+
+        m = Manager()
+        servers_json_file = common.config['servers_file']
+        m.pmm.add_physical_hosts_args = self.load_json(servers_json_file)
+        #m.pmm.add_physical_hosts_args = {'pms': [ \
+        #    {'id': '1',
+        #     'specpower': 'power_ssj2008-20121031-00575.html',
+        #    }, \
+        #    {'id': '2',
+        #     'specpower': 'power_ssj2008-20121031-00575.html',
+        #    }, \
+        #]}
+        m.pmm.add_physical_hosts_factory = host_factory
+        m.pmm.add_physical_hosts_callback = host_callback
+        m.pmm.add_physical_hosts()
+
+        vms_json_file = common.config['vms_file']
+        m.vmm.add_virtual_machines_args = self.load_json(vms_json_file)
+        #m.vmm.add_virtual_machines_args = {'vms': [
+        #    {'id': '1', 'flavor': 'small', 'trace': {\
+        #        'cpu': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
+        #        'mem': 'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
+        #        'disk': 'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
+        #        'net': 'planetlab-workload-traces/20110309/planetlab1_fct_ualg_pt_root',
+        #    }}, \
+        #{'id': '2', 'flavor': 'small', 'trace': { \
+        #        'cpu': 'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
+        #        'mem': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
+        #        'disk': 'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
+        #        'net': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
+        #    }}, \
+        #]}
+        m.vmm.add_virtual_machines_factory = vm_factory
+        m.vmm.add_virtual_machines_callback = vm_callback
+        m.vm_distrubutor = m.set_vm_distributor(vm_distributor_strategy_user, m)
+        m.vmm.add_virtual_machines()
+        #m.start()
+
+        s = Simulator()
+        pms_scenarios = [self.pmcount]
+        vms_scenarios = range(self.vmstart, self.vmstop, self.vmstep)
+
+        #pms_scenarios = range(20, 50, 10)
+        #vms_scenarios = range(16, 64, 16)
+
+
+        m_eu = copy.deepcopy(m)
+        m_ksp = copy.deepcopy(m)
+        m_ksp_mem = copy.deepcopy(m)
+        m_ksp_net_graph = copy.deepcopy(m)
+        m_ec = copy.deepcopy(m)
+        m_ec_net = copy.deepcopy(m)
+        m_ec_net_graph = copy.deepcopy(m)
+
+        if self.simulate_eu:
+            from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
+            strategy = EnergyUnawareStrategyPlacement()
+            log.info('=== STRATEGY START: {}'.format(strategy.__class__.__name__))
+            s.simulate_strategy(strategy, m_eu, pms_scenarios, vms_scenarios)
+            log.info('=== STRATEGY END: {}'.format(strategy.__class__.__name__))
+
+        if self.simulate_ksp:
+            from pycloudsim.strategies.iteratedksp import OpenOptStrategyPlacement
+            strategy = OpenOptStrategyPlacement()
+            log.info('=== STRATEGY START: {}'.format(strategy.__class__.__name__))
+            s.simulate_strategy(strategy, m_ksp, pms_scenarios, vms_scenarios)
+            log.info('=== STRATEGY END: {}'.format(strategy.__class__.__name__))
+
+        if self.simulate_ksp_mem:
+            from pycloudsim.strategies.iteratedkspmem import OpenOptStrategyPlacementMem
+            strategy = OpenOptStrategyPlacementMem()
+            log.info('=== STRATEGY START: {}'.format(strategy.__class__.__name__))
+            s.simulate_strategy(strategy, m_ksp_mem, pms_scenarios, vms_scenarios)
+            log.info('=== STRATEGY END: {}'.format(strategy.__class__.__name__))
+
+        if self.simulate_ksp_net_graph:
+            from pycloudsim.strategies.iteratedkspnetgraph import OpenOptStrategyPlacementNetGraph
+            strategy = OpenOptStrategyPlacementNetGraph()
+            log.info('=== STRATEGY START: {}'.format(strategy.__class__.__name__))
+            s.simulate_strategy(strategy, m_ksp_net_graph, pms_scenarios, vms_scenarios)
+            log.info('=== STRATEGY END: {}'.format(strategy.__class__.__name__))
+
+        if self.simulate_ec:
+            from pycloudsim.strategies.iteratedec import EvolutionaryComputationStrategyPlacement
+            strategy = EvolutionaryComputationStrategyPlacement()
+            log.info('=== STRATEGY START: {}'.format(strategy.__class__.__name__))
+            s.simulate_strategy(strategy, m_ec, pms_scenarios, vms_scenarios)
+            log.info('=== STRATEGY END: {}'.format(strategy.__class__.__name__))
+
+        if self.simulate_ec_net:
+            from pycloudsim.strategies.iteratedecnet import EvolutionaryComputationStrategyPlacementNet
+            strategy = EvolutionaryComputationStrategyPlacementNet()
+            log.info('=== STRATEGY START: {}'.format(strategy.__class__.__name__))
+            s.simulate_strategy(strategy, m_ec_net, pms_scenarios, vms_scenarios)
+            log.info('=== STRATEGY END: {}'.format(strategy.__class__.__name__))
+
+        if self.simulate_ec_net_graph:
+            from pycloudsim.strategies.iteratedecnetgraph import EvolutionaryComputationStrategyPlacementNetGraph
+            strategy = EvolutionaryComputationStrategyPlacementNetGraph()
+            log.info('=== STRATEGY START: {}'.format(strategy.__class__.__name__))
+            s.simulate_strategy(strategy, m_ec_net_graph, pms_scenarios, vms_scenarios)
+            log.info('=== STRATEGY END: {}'.format(strategy.__class__.__name__))
+
+        print('done')
 
 if __name__ == "__main__":
-    # ./ pycloudsim.py -h 72 -vma 16 -vmo 304 -vme 16
-    #   -t planetlab-workload-traces/merkur_planetlab_haw-hamburg_de_ yale_p4p
-    #   -o results/72-bla
-    # ./ simuplot.py
-    parser = argparse.ArgumentParser(description='A VM distribution/placement simulator.')
-    parser.add_argument('-pm', '--pmcount', help='Number of physical machines', required=False)
-    parser.add_argument('-vma', '--vmstart', help='Start number of VMs (def: 16)', required=False)
-    parser.add_argument('-vmo', '--vmstop', help='Stop number of VMs (def: 304)', required=False)
-    parser.add_argument('-vme', '--vmstep', help='Increment step number of VMs (def: 16)', required=False)
-#    parser.add_argument('-t', '--vmtrace', help='Full path to trace file', required=True)
-    parser.add_argument('-o', '--output', help='Output path', required=True)
-    parser.add_argument('-seu', '--simeu', help='Simulate Energy Unaware', required=False)
-    parser.add_argument('-sksp', '--simksp', help='Simulate Iterated-KSP', required=False)
-    parser.add_argument('-skspmem', '--simkspmem', help='Simulate Iterated-KSP-CPU', required=False)
-    parser.add_argument('-skspnetgraph', '--simkspnetgraph', help='Simulate Iterated-KSP-Net-Graph', required=False)
-    parser.add_argument('-sec', '--simec', help='Simulate Iterated-EC', required=False)
-    parser.add_argument('-secnet', '--simecnet', help='Simulate Iterated-EC-Net', required=False)
-    parser.add_argument('-secnetgraph', '--simecnetgraph', help='Simulate Iterated-EC-Net-Graph', required=False)
-    args = parser.parse_args()
-
-    pmcount = int(get_default_arg(72, args.pmcount))
-    vmstart = int(get_default_arg(16, args.vmstart))
-    vmstop = int(get_default_arg(304, args.vmstop))
-    vmstep = int(get_default_arg(16, args.vmstep))
-#    trace_file = get_default_arg('planetlab-workload-traces/merkur_planetlab_haw-hamburg_de_yale_p4p', args.vmtrace)
-    output_path = get_default_arg('results/path', args.output)
-    simulate_eu = bool(get_default_arg(0, args.simeu))
-    simulate_ksp = bool(get_default_arg(0, args.simksp))
-    simulate_ksp_mem = bool(get_default_arg(0, args.simkspmem))
-    simulate_ksp_net_graph = bool(get_default_arg(0, args.simkspnetgraph))
-    simulate_ec = bool(get_default_arg(0, args.simec))
-    simulate_ec_net = bool(get_default_arg(0, args.simecnet))
-    simulate_ec_net_graph = bool(get_default_arg(0, args.simecnetgraph))
-
-    m = Manager()
-    m.pmm.add_physical_hosts_args = load_json('../datacenter/servers.json')
-    #m.pmm.add_physical_hosts_args = {'pms': [ \
-    #    {'id': '1',
-    #     'specpower': 'power_ssj2008-20121031-00575.html',
-    #    }, \
-    #    {'id': '2',
-    #     'specpower': 'power_ssj2008-20121031-00575.html',
-    #    }, \
-    #]}
-    m.pmm.add_physical_hosts_factory = host_factory
-    m.pmm.add_physical_hosts_callback = host_callback
-    m.pmm.add_physical_hosts()
-
-    m.vmm.add_virtual_machines_args = load_json('../datacenter/vms-mean-30-40.json')
-    #m.vmm.add_virtual_machines_args = {'vms': [
-    #    {'id': '1', 'flavor': 'small', 'trace': {\
-    #        'cpu': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
-    #        'mem': 'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
-    #        'disk': 'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
-    #        'net': 'planetlab-workload-traces/20110309/planetlab1_fct_ualg_pt_root',
-    #    }}, \
-    #{'id': '2', 'flavor': 'small', 'trace': { \
-    #        'cpu': 'planetlab-workload-traces/20110420/plgmu4_ite_gmu_edu_rnp_dcc_ufjf',
-    #        'mem': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
-    #        'disk': 'planetlab-workload-traces/20110409/host4-plb_loria_fr_uw_oneswarm',
-    #        'net': 'planetlab-workload-traces/20110409/146-179_surfsnel_dsl_internl_net_root',
-    #    }}, \
-    #]}
-    m.vmm.add_virtual_machines_factory = vm_factory
-    m.vmm.add_virtual_machines_callback = vm_callback
-    m.vm_distrubutor = m.set_vm_distributor(vm_distributor_strategy_user, m)
-    m.vmm.add_virtual_machines()
-    #m.start()
-
-    s = Simulator()
-    pms_scenarios = [pmcount]
-    vms_scenarios = range(vmstart, vmstop, vmstep)
-
-    #pms_scenarios = range(20, 50, 10)
-    #vms_scenarios = range(16, 64, 16)
-
-    # TODO: Try to pull this out from the pycloudsim leve to the simulation
-    # level
-    config = common.read_and_validate_config()
-    common.init_logging(
-        config['log_directory'],
-        'simulation.log',
-        int(config['log_level']))
-
-    m_eu = copy.deepcopy(m)
-    m_ksp = copy.deepcopy(m)
-    m_ksp_mem = copy.deepcopy(m)
-    m_ksp_net_graph = copy.deepcopy(m)
-    m_ec = copy.deepcopy(m)
-    m_ec_net = copy.deepcopy(m)
-    m_ec_net_graph = copy.deepcopy(m)
-
-    if simulate_eu:
-        from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
-        strategy = EnergyUnawareStrategyPlacement()
-        log.info('strategy: {}'.format(strategy))
-        s.simulate_strategy(strategy, m_eu, pms_scenarios, vms_scenarios)
-
-    if simulate_ksp:
-        from pycloudsim.strategies.iteratedksp import OpenOptStrategyPlacement
-        strategy = OpenOptStrategyPlacement()
-        s.simulate_strategy(strategy, m_ksp, pms_scenarios, vms_scenarios)
-
-    if simulate_ksp_mem:
-        from pycloudsim.strategies.iteratedkspmem import OpenOptStrategyPlacementMem
-        strategy = OpenOptStrategyPlacementMem()
-        s.simulate_strategy(strategy, m_ksp_mem, pms_scenarios, vms_scenarios)
-
-    if simulate_ksp_net_graph:
-        from pycloudsim.strategies.iteratedkspnetgraph import OpenOptStrategyPlacementNetGraph
-        strategy = OpenOptStrategyPlacementNetGraph()
-        s.simulate_strategy(strategy, m_ksp_net_graph, pms_scenarios, vms_scenarios)
-
-    if simulate_ec:
-        from pycloudsim.strategies.iteratedec import EvolutionaryComputationStrategyPlacement
-        strategy = EvolutionaryComputationStrategyPlacement()
-        s.simulate_strategy(strategy, m_ec, pms_scenarios, vms_scenarios)
-
-    if simulate_ec_net:
-        from pycloudsim.strategies.iteratedecnet import EvolutionaryComputationStrategyPlacementNet
-        strategy = EvolutionaryComputationStrategyPlacementNet()
-        s.simulate_strategy(strategy, m_ec_net, pms_scenarios, vms_scenarios)
-
-    if simulate_ec_net_graph:
-        from pycloudsim.strategies.iteratedecnetgraph import EvolutionaryComputationStrategyPlacementNetGraph
-        log.info('strategy: {}'.format(strategy.__name__))
-        strategy = EvolutionaryComputationStrategyPlacementNetGraph()
-        s.simulate_strategy(strategy, m_ec_net_graph, pms_scenarios, vms_scenarios)
-    print('done')
+    pcs = pycloudsim()
+    pcs.run()
