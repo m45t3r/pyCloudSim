@@ -3,6 +3,9 @@ import random
 import time
 import multiprocessing
 
+# I didn't find a better way to do this =(
+upper_bounds = [99, 99, 99, 99]
+
 def my_generator(random, args):
     items = args['items']
     #print items
@@ -10,14 +13,31 @@ def my_generator(random, args):
 
 @inspyred.ec.evaluators.evaluator
 def my_evaluator(candidate, args):
-    items = args['items']
+    global upper_bounds
+    local_upper_bounds = upper_bounds
+
+    items = args['items']#['items']
+#    upper_bounds = args['items']['upper_bounds']
     totals = {}
     for metric in ['weight', 'cpu', 'mem', 'disk', 'net']:
         totals[metric] = sum([items[i][1][metric] for i, c in enumerate(candidate) if c == 1])
-    constraints = [max(0, totals[c] - 99) for c in ['cpu', 'mem', 'disk', 'net']]
+#    available_resources = [totals[c] - 99 for c in ['cpu', 'mem', 'disk', 'net']]
+#    constraints = [max(0, totals[c] - 99) for c in ['cpu', 'mem', 'disk', 'net']]
+
+    available_resources = calculate_available_resources(totals, upper_bounds)
+    constraints = [max(0, resource) for resource in available_resources]
+
     fitness = totals['weight'] - sum(constraints)
     #print fitness
     return fitness
+
+def calculate_available_resources(values, constraints):
+    return [#lambda values: (
+        values['cpu'] - constraints[0],
+        values['mem'] - constraints[1],
+        values['disk'] - constraints[2],
+        values['net'] - constraints[3],
+    ]#)
 
 class EvolutionaryComputationStrategyPlacement:
     def __init__(self):
@@ -27,6 +47,7 @@ class EvolutionaryComputationStrategyPlacement:
         self.vmm = None
         self.pmm = None
         #self.gen_costraints(['cpu', 'mem', 'disk', 'net'])
+
 
     def gen_vms(self):
         self.itemstuples = [(i, {
@@ -61,7 +82,12 @@ class EvolutionaryComputationStrategyPlacement:
     def set_base_graph_name(self, base_graph_name):
         self.base_graph_name = base_graph_name
 
-    def solve_host(self):
+    #def solve_host(self):
+    def solve_host(self, local_upper_bounds):
+        global upper_bounds
+        #upper_bounds = [60, 99, 99, 99]
+        upper_bounds = local_upper_bounds
+
         prng = random.Random()
         prng.seed(time.time())
 
@@ -90,6 +116,8 @@ class EvolutionaryComputationStrategyPlacement:
                               num_crossover_points=1,
                               num_elites=1,
                               max_evaluations=evals,
+#                              items={'items': itemstuples,
+#                                     'upper_bounds': [99, 99, 99, 99]}#upper_bounds}
                               items=itemstuples
                               )
 

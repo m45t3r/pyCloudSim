@@ -1,23 +1,23 @@
 from openopt import KSP
 
-def gen_costraint(self, values, constraint):
-    return values.value[constraint] < 99
-
-def add_constraints(self, values, constraint_list):
-    return [self.add_constraint(values, constraint) for constraint in constraint_list]
-
-def add_constraint(values, constraint):
-    # http://stackoverflow.com/questions/5818192/getting-field-names-reflectively-with-python
-    # val = getattr(ob, attr)
-    return values[constraint] < 99
-
-def add_double_constraint(values, constraint):
-    # http://stackoverflow.com/questions/5818192/getting-field-names-reflectively-with-python
-    # val = getattr(ob, attr)
-    return values[constraint] < 200
-
-def add_constraints(values, constraint_list):
-    return [add_constraint(values, constraint) for constraint in constraint_list]
+#def gen_costraint(self, values, constraint):
+#    return values.value[constraint] < 99
+#
+#def add_constraints(self, values, constraint_list):
+#    return [self.add_constraint(values, constraint) for constraint in constraint_list]
+#
+#def add_constraint(values, constraint):
+#    # http://stackoverflow.com/questions/5818192/getting-field-names-reflectively-with-python
+#    # val = getattr(ob, attr)
+#    return values[constraint] < 99
+#
+#def add_double_constraint(values, constraint):
+#    # http://stackoverflow.com/questions/5818192/getting-field-names-reflectively-with-python
+#    # val = getattr(ob, attr)
+#    return values[constraint] < 200
+#
+#def add_constraints(values, constraint_list):
+#    return [add_constraint(values, constraint) for constraint in constraint_list]
 
 class OpenOptStrategyPlacementMem:
     def __init__(self):
@@ -27,15 +27,25 @@ class OpenOptStrategyPlacementMem:
         self.pmm = None
         #self.items_count = items_count
         #self.hosts_count = hosts_count
-        self.gen_costraints(['cpu', 'disk', 'net'])
+        #self.gen_costraints(['cpu', 'disk', 'net'])
+        self.gen_costraints()
 
-    def gen_costraints(self, constraint_list):
+    def gen_costraints(self): #, constraint_list):
         self.constraints = lambda values: (
-            values['cpu'] < 99,
-            values['mem'] < 200,
-            values['disk'] < 99,
-            values['net'] < 99,
+            values['cpu'] < self.available_cpu,
+            values['mem'] < 200, #self.available_mem,
+            values['disk'] < self.available_disk,
+            values['net'] < self.available_net,
+            #add_constraints(values, constraint_list)
         )
+
+    #def gen_costraints(self, constraint_list):
+    #    self.constraints = lambda values: (
+    #        values['cpu'] < 99,
+    #        values['mem'] < 200,
+    #        values['disk'] < 99,
+    #        values['net'] < 99,
+    #    )
 #        self.constraints = lambda values: (
 #            add_constraints(values, constraint_list),
 #            add_double_constraint(values, 'mem')
@@ -55,7 +65,11 @@ class OpenOptStrategyPlacementMem:
     def set_base_graph_name(self, base_graph_name):
         self.base_graph_name = base_graph_name
 
-    def solve_host(self):
+    def solve_host(self, upper_bounds):
+        self.available_cpu = upper_bounds[0]
+        self.available_mem = upper_bounds[1]
+        self.available_disk = upper_bounds[2]
+        self.available_net = upper_bounds[3]
         p = KSP('weight', self.items, constraints = self.constraints)
         result = p.solve('glpk', iprint = -1)
         return result

@@ -6,6 +6,8 @@ import collections
 import math
 import multiprocessing
 
+# I didn't find a better way to do this =(
+upper_bounds = [99, 99, 99, 99]
 
 #@functools.total_ordering
 #class Lexicographic(object):
@@ -79,8 +81,19 @@ def my_generator(random, args):
 #    counts[choice(population, weights)] += 1
 #    print(counts)
 
+def calculate_available_resources(values, constraints):
+    return [#lambda values: (
+        values['cpu'] - constraints[0],
+        values['mem'] - constraints[1],
+        values['disk'] - constraints[2],
+        values['net'] - constraints[3],
+    ]#)
+
 @inspyred.ec.evaluators.evaluator
 def my_evaluator(candidate, args):
+    global upper_bounds
+    local_upper_bounds = upper_bounds
+
     items = args['items']
     totals = {}
     resources = ['cpu', 'mem', 'disk', 'net']
@@ -91,9 +104,11 @@ def my_evaluator(candidate, args):
                 totals[metric] += items[i][1][metric]
 #        logging.debug('my_evaluator: totals[{}] = {}'.format(metric, totals[metric]))
 
-    constraints = []
-    for c in resources:
-        constraints += [max(0, totals[c] - 99)]
+    #constraints = []
+    #for c in resources:
+    #    constraints += [max(0, totals[c] - 99)]
+    available_resources = calculate_available_resources(totals, upper_bounds)
+    constraints = [max(0, resource) for resource in available_resources]
 #    logging.debug('my_evaluator: constraints = {}'.format(constraints))
 
     fitness = (totals['weight'] - sum(constraints))
@@ -178,7 +193,11 @@ class EvolutionaryComputationStrategyPlacementNet:
     def set_base_graph_name(self, base_graph_name):
         self.base_graph_name = base_graph_name
 
-    def solve_host(self):
+    def solve_host(self, local_upper_bounds):
+        global upper_bounds
+        #upper_bounds = [60, 99, 99, 99]
+        upper_bounds = local_upper_bounds
+
         prng = random.Random()
         prng.seed(time.time())
 

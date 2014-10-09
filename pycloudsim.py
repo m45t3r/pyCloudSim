@@ -34,6 +34,13 @@ import logging
 import copy
 import json
 import os
+
+# Trap exceptions into an ipython shell
+#import sys
+#from IPython.core import ultratb
+#sys.excepthook = ultratb.FormattedTB(mode='Verbose',
+#                                     color_scheme='Linux', call_pdb=1)
+
 log = logging.getLogger(__name__)
 
 #PROF_DATA = {}
@@ -272,7 +279,7 @@ if __name__ == "__main__":
     if simulate_eu:
         from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
         strategy = EnergyUnawareStrategyPlacement()
-#        log.info('strategy: {}'.format(strategy))
+        log.info('strategy: {}'.format(strategy))
         s.simulate_strategy(strategy, m_eu, pms_scenarios, vms_scenarios)
 
     if simulate_ksp:
@@ -280,28 +287,29 @@ if __name__ == "__main__":
         strategy = OpenOptStrategyPlacement()
         s.simulate_strategy(strategy, m_ksp, pms_scenarios, vms_scenarios)
 
-#    if simulate_ksp_mem:
-#        from pycloudsim.strategies.iteratedkspmem import OpenOptStrategyPlacementMem
-#        strategy = OpenOptStrategyPlacementMem()
-#        s.simulate_strategy(strategy, m_ksp_mem, pms_scenarios, vms_scenarios)
-#
-#    if simulate_ksp_net_graph:
-#        from pycloudsim.strategies.iteratedkspnetgraph import OpenOptStrategyPlacementNetGraph
-#        strategy = OpenOptStrategyPlacementNetGraph()
-#        s.simulate_strategy(strategy, m_ksp_net_graph, pms_scenarios, vms_scenarios)
-#
-#    if simulate_ec:
-#        from pycloudsim.strategies.iteratedec import EvolutionaryComputationStrategyPlacement
-#        strategy = EvolutionaryComputationStrategyPlacement()
-#        s.simulate_strategy(strategy, m_ec, pms_scenarios, vms_scenarios)
-#
-#    if simulate_ec_net:
-#        from pycloudsim.strategies.iteratedecnet import EvolutionaryComputationStrategyPlacementNet
-#        strategy = EvolutionaryComputationStrategyPlacementNet()
-#        s.simulate_strategy(strategy, m_ec_net, pms_scenarios, vms_scenarios)
-#
-#    if simulate_ec_net_graph:
-#        from pycloudsim.strategies.iteratedecnetgraph import EvolutionaryComputationStrategyPlacementNetGraph
-#        strategy = EvolutionaryComputationStrategyPlacementNetGraph()
-#        s.simulate_strategy(strategy, m_ec_net_graph, pms_scenarios, vms_scenarios)
+    if simulate_ksp_mem:
+        from pycloudsim.strategies.iteratedkspmem import OpenOptStrategyPlacementMem
+        strategy = OpenOptStrategyPlacementMem()
+        s.simulate_strategy(strategy, m_ksp_mem, pms_scenarios, vms_scenarios)
+
+    if simulate_ksp_net_graph:
+        from pycloudsim.strategies.iteratedkspnetgraph import OpenOptStrategyPlacementNetGraph
+        strategy = OpenOptStrategyPlacementNetGraph()
+        s.simulate_strategy(strategy, m_ksp_net_graph, pms_scenarios, vms_scenarios)
+
+    if simulate_ec:
+        from pycloudsim.strategies.iteratedec import EvolutionaryComputationStrategyPlacement
+        strategy = EvolutionaryComputationStrategyPlacement()
+        s.simulate_strategy(strategy, m_ec, pms_scenarios, vms_scenarios)
+
+    if simulate_ec_net:
+        from pycloudsim.strategies.iteratedecnet import EvolutionaryComputationStrategyPlacementNet
+        strategy = EvolutionaryComputationStrategyPlacementNet()
+        s.simulate_strategy(strategy, m_ec_net, pms_scenarios, vms_scenarios)
+
+    if simulate_ec_net_graph:
+        from pycloudsim.strategies.iteratedecnetgraph import EvolutionaryComputationStrategyPlacementNetGraph
+        log.info('strategy: {}'.format(strategy.__name__))
+        strategy = EvolutionaryComputationStrategyPlacementNetGraph()
+        s.simulate_strategy(strategy, m_ec_net_graph, pms_scenarios, vms_scenarios)
     print('done')

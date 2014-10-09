@@ -53,6 +53,13 @@ class TestPhysicalMachine(object):
         self.h.vms.append(vm2)
         assert self.h.estimate_consumed_power() == 100
 
+    def test_power_100_percent(self):
+        self.setUp()
+        vm1 = VirtualMachine('0', 'small')
+        vm1.value['cpu'] = 100
+        self.h.vms.append(vm1)
+        assert self.h.estimate_consumed_power() == 269
+
     def test_available_resources(self):
         self.setUp()
         vm1 = VirtualMachine('0', 'small')

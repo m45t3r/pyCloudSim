@@ -111,7 +111,10 @@ class PhysicalMachine:
                     bottom_cpu = cpu_without_tens * 10
                     bottom_consumption = self.specs.specs_by_load[bottom_cpu]['consumption']
                     top_cpu = cpu_without_tens * 10 + 10
-                    top_consumption = self.specs.specs_by_load[top_cpu]['consumption']
-                    result = bottom_consumption + \
-                            (top_consumption - bottom_consumption) / 10 * cpu_tens
+                    if top_cpu < 110:
+                        top_consumption = self.specs.specs_by_load[top_cpu]['consumption']
+                        result = bottom_consumption + \
+                                (top_consumption - bottom_consumption) / 10 * cpu_tens
+                    else:
+                        result = bottom_consumption
         return result

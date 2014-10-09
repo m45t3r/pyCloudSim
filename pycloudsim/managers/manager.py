@@ -74,20 +74,15 @@ class Manager:
             if self.vmm.items != []:
                 available_resources = host.available_resources()
                 compute_resources = available_resources
-                non_linear = True
+                non_linear = False
                 skip = False
                 if non_linear:
-                    import ipdb; ipdb.set_trace() # BREAKPOINT
+                    optimal_cpu = host.specs.optimal_load().next()['load']
                     optimal_cpu = host.specs.optimal_load().next()['load']
                     optimal_cpu_diff = available_resources[0] - optimal_cpu
-                    skip = optimal_cpu <= 0
+                    skip = host.cpu >= optimal_cpu
                     if not skip:
-                        compute_resources[0] = [
-                            optimal_cpu_diff,
-                            available_resources[1],
-                            available_resources[2],
-                            available_resources[3],
-                        ]
+                        compute_resources[0] = optimal_cpu
                 if not skip:
                     solution = self.strategy.solve_host(compute_resources)
                     vms = self.strategy.get_vm_objects(solution)
