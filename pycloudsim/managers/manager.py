@@ -79,12 +79,17 @@ class Manager:
                 available_resources = host.available_resources()
                 compute_resources = available_resources
                 log.info('Host available resources: {}'.format(available_resources))
-                non_linear = common.config['non_linear'].lower() == 'true'
+                linear_method = common.config['non_linear'].lower() == 'false'
                 skip = False
-                if non_linear:
-                    log.info('OPTIMIZATION: Non-linear')
+                if linear_method:
+                    log.info('LINEAR MODEL OPTIMIZATION (maximizing VMs per host):')
+                else:
+                    log.info('NON LINEAR MODEL OPTIMIZATION:')
                     optimal_cpu = host.specs.optimal_load().next()['load']
-                    optimal_cpu = host.specs.optimal_load().next()['load']
+#                    optimal_cpu = host.specs.optimal_load().next()['load']
+#                    optimal_cpu = host.specs.optimal_load().next()['load']
+#                    optimal_cpu = host.specs.optimal_load().next()['load']
+                    import ipdb; ipdb.set_trace() # BREAKPOINT
                     skip = host.cpu >= optimal_cpu
                     if not skip:
                         compute_resources[0] = optimal_cpu
@@ -93,8 +98,6 @@ class Manager:
                         log.info('Setting up computing resources to: {}'.format(compute_resources))
                     else:
                         log.info('CPU threshold bigger than optimal, skipping this host')
-                else:
-                    log.info('OPTIMIZATION: Linear (maximizing VMs per host)')
 
                 if not skip:
                     solution = self.strategy.solve_host(compute_resources)

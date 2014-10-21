@@ -222,7 +222,6 @@ class pycloudsim():
     def run(self):
         # TODO: Try to pull this out from the pycloudsim leve to the simulation
         # level
-        import ipdb; ipdb.set_trace() # BREAKPOINT
         config = common.read_and_validate_config()
         common.config = config
         log_dir = os.path.abspath(config['log_directory'])

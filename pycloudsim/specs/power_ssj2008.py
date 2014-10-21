@@ -31,15 +31,19 @@ class SpecParser():
         #doc = lxml.html.parse('power_ssj2008-20121031-00575.html')
 
         # CPU Frequency
-        spec_hw_cpu_freq_path = '//*[@id="set_sut"]/div[3]/table/tbody/tr[6]/td[2]'
+        #'/html/body/div[11]'
+        #spec_hw_cpu_freq_path = '//*[@id="set_sut"]/div[3]/table/tbody/tr[6]/td[2]'
+        spec_hw_cpu_freq_path = '/html/body/div[11]/div[3]/table/tbody/tr[6]/td[2]'
         xp_spec_hw_cpu_freq = doc.xpath(spec_hw_cpu_freq_path)
         self.cpu_freq = int(xp_spec_hw_cpu_freq[0].text)
         # Cores
-        spec_hw_cores_path = '//*[@id="set_sut"]/div[3]/table/tbody/tr[7]/td[2]'
+        #spec_hw_cores_path = '//*[@id="set_sut"]/div[3]/table/tbody/tr[7]/td[2]'
+        spec_hw_cores_path = '/html/body/div[11]/div[3]/table/tbody/tr[7]/td[2]'
         xp_spec_hw_cores = doc.xpath(spec_hw_cores_path)
         self.cores = int(xp_spec_hw_cores[0].text.split()[0])
         # Threads
-        spec_hw_threads_path = '//*[@id="set_sut"]/div[3]/table/tbody/tr[8]/td[2]'
+        #spec_hw_threads_path = '//*[@id="set_sut"]/div[3]/table/tbody/tr[8]/td[2]'
+        spec_hw_threads_path = '/html/body/div[11]/div[3]/table/tbody/tr[8]/td[2]'
         xp_spec_hw_threads = doc.xpath(spec_hw_threads_path)
         self.threads = int(xp_spec_hw_threads[0].text.split()[0])
 
