@@ -34,6 +34,7 @@ import logging
 import copy
 import json
 import os
+import errno
 
 # Trap exceptions into an ipython shell
 #import sys
@@ -73,6 +74,14 @@ log = logging.getLogger(__name__)
 #def clear_prof_data():
 #    global PROF_DATA
 #    PROF_DATA = {}
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc: # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else: raise
 
 def host_factory(**kwargs):
     pms_list = kwargs['pms']
@@ -195,7 +204,8 @@ class pycloudsim():
         parser.add_argument('-vmo', '--vmstop', help='Stop number of VMs (def: 304)', required=False)
         parser.add_argument('-vme', '--vmstep', help='Increment step number of VMs (def: 16)', required=False)
     #    parser.add_argument('-t', '--vmtrace', help='Full path to trace file', required=True)
-        parser.add_argument('-o', '--output', help='Output path', required=True)
+        parser.add_argument('-c', '--config', help='Config file', required=False)
+#        parser.add_argument('-o', '--output', help='Output path', required=True)
         parser.add_argument('-seu', '--simeu', help='Simulate Energy Unaware', required=False)
         parser.add_argument('-sksp', '--simksp', help='Simulate Iterated-KSP', required=False)
         parser.add_argument('-skspmem', '--simkspmem', help='Simulate Iterated-KSP-CPU', required=False)
@@ -210,7 +220,8 @@ class pycloudsim():
         self.vmstop = int(self.get_default_arg(304, args.vmstop))
         self.vmstep = int(self.get_default_arg(16, args.vmstep))
     #   self. trace_file = get_default_arg('planetlab-workload-traces/merkur_planetlab_haw-hamburg_de_yale_p4p', args.vmtrace)
-        self.output_path = self.get_default_arg('results/path', args.output)
+        self.config_file = self.get_default_arg('pycloudsim.conf', args.config)
+#        self.output_path = self.get_default_arg('results/path', args.output)
         self.simulate_eu = bool(self.get_default_arg(0, args.simeu))
         self.simulate_ksp = bool(self.get_default_arg(0, args.simksp))
         self.simulate_ksp_mem = bool(self.get_default_arg(0, args.simkspmem))
@@ -220,9 +231,11 @@ class pycloudsim():
         self.simulate_ec_net_graph = bool(self.get_default_arg(0, args.simecnetgraph))
 
     def run(self):
+        self.parse_args()
+
         # TODO: Try to pull this out from the pycloudsim leve to the simulation
         # level
-        config = common.read_and_validate_config()
+        config = common.read_and_validate_config(self.config_file)
         common.config = config
         log_dir = os.path.abspath(config['log_directory'])
         common.init_logging(
@@ -230,7 +243,9 @@ class pycloudsim():
             'simulation.log',
             int(config['log_level']))
 
-        self.parse_args()
+        config['output_path'] = os.path.join(config['output_directory'], config['simulation_name'])
+        mkdir_p(config['output_path'])
+        log.info('Output folder: {}'.format(config['output_path']))
 
         m = Manager()
         servers_json_file = common.config['servers_file']

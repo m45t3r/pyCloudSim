@@ -84,12 +84,16 @@ class Manager:
                 if linear_method:
                     log.info('LINEAR MODEL OPTIMIZATION (maximizing VMs per host):')
                 else:
+                    non_linear_optimum = int(common.config['non_linear_optimum'])
                     log.info('NON LINEAR MODEL OPTIMIZATION:')
-                    optimal_cpu = host.specs.optimal_load().next()['load']
+                    for index in range(0, non_linear_optimum):
+                        optimal_cpu = host.specs.optimal_load().next()['load']
+                        if index is not non_linear_optimum - 1:
+                            log.info('Skiping optimum {}'.format(optimal_cpu))
 #                    optimal_cpu = host.specs.optimal_load().next()['load']
 #                    optimal_cpu = host.specs.optimal_load().next()['load']
 #                    optimal_cpu = host.specs.optimal_load().next()['load']
-                    import ipdb; ipdb.set_trace() # BREAKPOINT
+#                    optimal_cpu = host.specs.optimal_load().next()['load']
                     skip = host.cpu >= optimal_cpu
                     if not skip:
                         compute_resources[0] = optimal_cpu

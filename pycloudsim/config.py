@@ -27,8 +27,11 @@ def validate_config(config, required_fields):
             return False
     return True
 
-def read_and_validate_config():
-    paths = [DEFAULT_CONFIG_PATH]
+def read_and_validate_config(filename=None):
+    if filename == None:
+        paths = [DEFAULT_CONFIG_PATH]
+    else:
+        paths = [filename]
     required_fields = REQUIRED_FIELDS
     config = read_config(paths)
     if not validate_config(config, required_fields):
