@@ -118,19 +118,22 @@ class Simulator:
 #        for r in range(0, vmscount):
 #            matrix.append([0 for c in range(0, vmscount)])
 
-        header = ['Strategy' , 'Host', 'CPU', 'Mem', 'disk', 'net']
+        header = ['Strategy' , 'Host', 'CPU', 'Mem', 'disk', 'net', '#VMs', 'KW']
         writer.writerow(header)
 
         strategy = strategy.__class__.__name__
         for host in hosts:
             cpu = mem = disk = net = 0
+            count = 0
             for vm in host.vms:
                 vmid = int(vm.id)
                 cpu += vm.value['cpu']
                 mem += vm.value['mem']
                 disk += vm.value['disk']
                 net += vm.value['net']
-            writer.writerow([strategy, host.id, cpu, mem, disk, net])
+                count += 1
+            writer.writerow([strategy, host.id, cpu, mem, disk, net, count,
+                            host.estimate_consumed_power()])
 
         fh.close()
 
