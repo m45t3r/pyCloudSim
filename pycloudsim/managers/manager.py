@@ -9,34 +9,15 @@ log = logging.getLogger(__name__)
 
 class Manager:
     def __init__(self):
-#        self.add_physical_hosts_factory = None
-#        self.add_physical_hosts_args = None
-#        self.add_physical_hosts_callback = None
-#        self.add_virtual_machines_factory = None
-#        self.add_virtual_machines_args = None
-#        self.add_virtual_machines_callback = None
         self.placement = []
-#        self.total_pm = 0
-#        self.total_vm = 0
-#        self.vmm = None
         self.pmm = PMManager()
         self.strategy = None
-#        self.vm_list = []
         self.vmm = VMManager()
         self.pmm_copy = None
         self.vmm_copy = None
 
     def set_vm_distributor(self, algorithm, manager):
         algorithm(manager)
-
-    #def set_vm_count(self, trace_file, total_vm):
-#    def set_vm_count(self, total_vm):
-#        self.total_vm = total_vm
-#        self.vmm = VMManager(trace_file, total_vm)
-
-#    def set_pm_count(self, total_pm):
-#        self.total_pm = total_pm
-#        self.pmm = PMManager(total_pm)
 
     def set_strategy(self, strategy):
         self.strategy = strategy
@@ -87,6 +68,7 @@ class Manager:
                     non_linear_optimum = int(common.config['non_linear_optimum'])
                     log.info('NON LINEAR MODEL OPTIMIZATION:')
                     for index in range(0, non_linear_optimum):
+#                        import ipdb; ipdb.set_trace() # BREAKPOINT
                         optimal_cpu = host.specs.optimal_load().next()['load']
                         if index is not non_linear_optimum - 1:
                             log.info('Skiping optimum {}'.format(optimal_cpu))
