@@ -64,6 +64,7 @@ class Manager:
             vms_list = sorted(self.vmm.items, key=operator.itemgetter('cpu'), reverse=True)
             # import pdb; pdb.set_trace() # BREAKPOINT
             for vm in vms_list:
+                self.vmm.items = [vm]
                 log.info('--- Placing VM {}'.format(vm))
                 min_power = float('inf')
                 allocated_host = None
@@ -76,12 +77,13 @@ class Manager:
                     # No need to check for linear optimization, since this is always
                     # linear, at least for now.
                     log.info('LINEAR MODEL OPTIMIZATION (maximizing VMs per host):')
-                    host.place_vm(vm)
-                    power = host.estimate_consumed_power()
-                    host.remove_vm(vm)
-                    if power < min_power:
-                        allocated_host = host
-                        min_power = power
+                    if self.strategy.solve_host(compute_resources):
+                        host.place_vm(vm)
+                        power = host.estimate_consumed_power()
+                        host.remove_vm(vm)
+                        if power < min_power:
+                            allocated_host = host
+                            min_power = power
                 if allocated_host is not None:
                     host.place_vm(vm)
                     available_resources = host.available_resources()
