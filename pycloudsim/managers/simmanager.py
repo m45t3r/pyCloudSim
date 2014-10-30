@@ -187,6 +187,9 @@ class Simulator:
             for vms in vms_scenarios:
                 m.reset()
 #                self.base_graph_name = 'results/graph-{}-{}-{}-{}-'.format(trace_filename, strategy.__class__.__name__, str(pms).zfill(3), str(vms).zfill(3))
+#                if vms == 64:
+#                    import ipdb; ipdb.set_trace() # BREAKPOINT
+
                 scenario = self.simulate_scenario(strategy, m, pms, vms)
 #                self.csv_generate_graph(scenario, vms, 'results/graph-{}-{}-{}-{}-{}.csv'.format(trace_filename, strategy.__class__.__name__, str(pms).zfill(3), str(vms).zfill(3), stamp))
                 #self.csv_write_placement(scenario, strategy, 'results/summarized-placement-{}-{}-{}-{}-{}.csv'.format(trace_filename, strategy.__class__.__name__, str(pms).zfill(3), str(vms).zfill(3), stamp))
