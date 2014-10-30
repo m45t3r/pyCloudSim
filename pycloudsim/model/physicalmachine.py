@@ -28,6 +28,18 @@ class PhysicalMachine:
         self.disk += vm.value['disk']
         self.net += vm.value['net']
 
+    def remove_vm(self, vm):
+        self.vms.remove(vm)
+        vm.value['placed'] = 0
+#        self.cpu = self.mem = 0
+#        self.disk = self.net = 0
+#        for vm in self.vms:
+        self.cpu -= vm.value['cpu']
+        self.mem -= vm.value['mem']
+        self.disk -= vm.value['disk']
+        self.net -= vm.value['net']
+
+
     def available_resources(self):
         return [
             100 - self.cpu,

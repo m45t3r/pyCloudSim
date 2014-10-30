@@ -1,9 +1,11 @@
 from pmmanager import PMManager
 from vmmanager import VMManager
 from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
+from pycloudsim.strategies.mbfd import ModifiedBestFitDecreasingPlacement
 from pycloudsim.common import log
 import pycloudsim.common as common
 import copy
+import operator
 import logging
 log = logging.getLogger(__name__)
 
@@ -54,49 +56,88 @@ class Manager:
         vms_list = self.vmm.items
         del pms_list[number_pms:]
         del vms_list[number_vms:]
-        for host in self.pmm.items:
-            log.info('--- Placing VMS on host {}'.format(host))
-            if self.vmm.items != []:
-                available_resources = host.available_resources()
-                compute_resources = available_resources
-                log.info('Host available resources: {}'.format(available_resources))
-                linear_method = common.config['non_linear'].lower() == 'false'
-                skip = False
-                if linear_method:
-                    log.info('LINEAR MODEL OPTIMIZATION (maximizing VMs per host):')
-                else:
-                    non_linear_optimum = int(common.config['non_linear_optimum'])
-                    log.info('NON LINEAR MODEL OPTIMIZATION:')
-                    for index in range(0, non_linear_optimum):
-#                        import ipdb; ipdb.set_trace() # BREAKPOINT
-                        optimal_cpu = host.specs.optimal_load().next()['load']
-                        if index is not non_linear_optimum - 1:
-                            log.info('Skiping optimum {}'.format(optimal_cpu))
-#                    optimal_cpu = host.specs.optimal_load().next()['load']
-#                    optimal_cpu = host.specs.optimal_load().next()['load']
-#                    optimal_cpu = host.specs.optimal_load().next()['load']
-#                    optimal_cpu = host.specs.optimal_load().next()['load']
-                    skip = host.cpu >= optimal_cpu
-                    if not skip:
-                        compute_resources[0] = optimal_cpu
-                        log.info('Optimal CPU value is: {}'.format(optimal_cpu))
-                        log.info('Current CPU value is: {}'.format(host.cpu))
-                        log.info('Setting up computing resources to: {}'.format(compute_resources))
-                    else:
-                        log.info('CPU threshold bigger than optimal, skipping this host')
 
-                if not skip:
-                    solution = self.strategy.solve_host(compute_resources)
-                    vms = self.strategy.get_vm_objects(solution)
-                    if vms is not None:
-                        self.place_vms(vms, host)
-                        available_resources = host.available_resources()
-                        log.info('Host available resources after placement: {}'.format(available_resources))
-            else:
-                if not isinstance(self.strategy, EnergyUnawareStrategyPlacement):
+        # MBFD is completely different to other methods, since it iterates
+        # first in VMs
+        if isinstance(self.strategy, ModifiedBestFitDecreasingPlacement):
+            # Sort in decreasing order of CPU utilization
+            vms_list = sorted(self.vmm.items, key=operator.itemgetter('cpu'), reverse=True)
+            # import pdb; pdb.set_trace() # BREAKPOINT
+            for vm in vms_list:
+                log.info('--- Placing VM {}'.format(vm))
+                min_power = float('inf')
+                allocated_host = None
+                vms = None
+
+                for host in self.pmm.items:
+                    available_resources = host.available_resources()
+                    compute_resources = available_resources
+                    log.info('Host available resources: {}'.format(available_resources))
+                    # No need to check for linear optimization, since this is always
+                    # linear, at least for now.
+                    log.info('LINEAR MODEL OPTIMIZATION (maximizing VMs per host):')
+                    host.place_vm(vm)
+                    power = host.estimate_consumed_power()
+                    host.remove_vm(vm)
+                    if power < min_power:
+                        allocated_host = host
+                        min_power = power
+                if allocated_host is not None:
+                    host.place_vm(vm)
+                    available_resources = host.available_resources()
+                    log.info('Host available resources after placement: {}'.format(available_resources))
+
+            # Suspend idle PMs
+            for host in self.pmm.items:
+                if host.self.vms == []:
                     host.suspend()
-                    log.info('Suspending host: {}'.format(host))
-                #print(host)
+
+
+        else:
+            for host in self.pmm.items:
+                log.info('--- Placing VMS on host {}'.format(host))
+                if self.vmm.items != []:
+                    available_resources = host.available_resources()
+                    compute_resources = available_resources
+                    log.info('Host available resources: {}'.format(available_resources))
+                    linear_method = common.config['non_linear'].lower() == 'false'
+                    skip = False
+                    if linear_method:
+                        log.info('LINEAR MODEL OPTIMIZATION (maximizing VMs per host):')
+                    else:
+                        non_linear_optimum = int(common.config['non_linear_optimum'])
+                        log.info('NON LINEAR MODEL OPTIMIZATION:')
+                        for index in range(0, non_linear_optimum):
+    #                        import ipdb; ipdb.set_trace() # BREAKPOINT
+                            optimal_cpu = host.specs.optimal_load().next()['load']
+                            if index is not non_linear_optimum - 1:
+                                log.info('Skiping optimum {}'.format(optimal_cpu))
+    #                    optimal_cpu = host.specs.optimal_load().next()['load']
+    #                    optimal_cpu = host.specs.optimal_load().next()['load']
+    #                    optimal_cpu = host.specs.optimal_load().next()['load']
+    #                    optimal_cpu = host.specs.optimal_load().next()['load']
+                        skip = host.cpu >= optimal_cpu
+                        if not skip:
+                            compute_resources[0] = optimal_cpu
+                            log.info('Optimal CPU value is: {}'.format(optimal_cpu))
+                            log.info('Current CPU value is: {}'.format(host.cpu))
+                            log.info('Setting up computing resources to: {}'.format(compute_resources))
+                        else:
+                            log.info('CPU threshold bigger than optimal, skipping this host')
+
+                    if not skip:
+                        solution = self.strategy.solve_host(compute_resources)
+                        vms = self.strategy.get_vm_objects(solution)
+                        if vms is not None:
+                            self.place_vms(vms, host)
+                            available_resources = host.available_resources()
+                            log.info('Host available resources after placement: {}'.format(available_resources))
+                else:
+                    if not isinstance(self.strategy, EnergyUnawareStrategyPlacement):
+                        host.suspend()
+                        log.info('Suspending host: {}'.format(host))
+                    #print(host)
+
 
     def calculate_power_consumed(self):
         result = 0
