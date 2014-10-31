@@ -91,7 +91,7 @@ class Manager:
 
             # Suspend idle PMs
             for host in self.pmm.items:
-                if host.self.vms == []:
+                if host.vms == []:
                     host.suspend()
 
 
