@@ -73,25 +73,27 @@ class Manager:
                 for host in self.pmm.items:
                     available_resources = host.available_resources()
                     compute_resources = available_resources
-                    log.info('Host available resources: {}'.format(available_resources))
-                    # No need to check for linear optimization, since this is always
-                    # linear, at least for now.
-                    log.info('LINEAR MODEL OPTIMIZATION (maximizing VMs per host):')
+                    log.info('Host {} available resources: {}'.format(host, available_resources))
                     if self.strategy.solve_host(compute_resources):
                         host.place_vm(vm)
                         power = host.estimate_consumed_power()
+                        log.info('Calculated power on host {}: {}'.format(host, power))
                         host.remove_vm(vm)
                         if power < min_power:
+                            log.info('New minimal allocation found on host {}'.format(host))
                             allocated_host = host
                             min_power = power
+                            
                 if allocated_host is not None:
-                    host.place_vm(vm)
-                    available_resources = host.available_resources()
+                    log.info('Allocating {} on host {}'.format(vm, allocated_host))
+                    allocated_host.place_vm(vm)
+                    available_resources = allocated_host.available_resources()
                     log.info('Host available resources after placement: {}'.format(available_resources))
 
             # Suspend idle PMs
             for host in self.pmm.items:
                 if host.vms == []:
+                    log.info('Suspending host {}'.format(host))
                     host.suspend()
 
 
