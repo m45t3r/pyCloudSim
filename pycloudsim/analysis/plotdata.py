@@ -15,6 +15,7 @@ import numpy as np
 import scipy as sp
 import scipy.stats
 from collections import defaultdict
+import pycloudsim.common as common
 
 
 dir = 'results'
@@ -210,12 +211,26 @@ class GraphGenerator:
             self.title,
             )
 
-    def algorithm_confidence_interval_figure(self, trace_file, algorithm,
+    #def algorithm_confidence_interval_figure(self, trace_file, algorithm,
+    def algorithm_confidence_interval_figure(self, host_scenario, algorithm,
                  data,
                  x_aspect, y_aspect,
                  x_title, y_title, title):
 
         reversed_data = transposed(data)
+
+        # FIXME: Emergency dump detected!
+        filename = common.config['simulation_name'] + '-' \
+            + reversed_data[0][0]['strategy'] + '-dump.csv'
+        filename = os.path.join(common.config['output_directory'], filename)
+        with open(filename, "wb") as f:
+            writer = csv.writer(f)
+            for vm_scenario in reversed_data:
+                for experiment in vm_scenario:
+                    data = [int(experiment['#VM']), float(experiment['KW']), float(experiment['T'])]
+                    writer.writerow(data)
+        #import ipdb; ipdb.set_trace() # BREAKPOINT
+
 
         fig, ax = plt.subplots()
         ax.set_xlabel(x_title, fontsize=18)
@@ -268,15 +283,16 @@ class GraphGenerator:
 #        ax.plot(x2, y2b, color='blue', ls='-', marker='o', label=self.legend(data1[0]['strategy']))
 
         #plt.show()
-        plt.savefig(self.result_dir + '/figure-' + trace_file + '-' +
+        plt.savefig(self.result_dir + '/figure-' + #'-' + trace_file + '-' +
             title + '-' + algorithm + '.png')
 #        plt.savefig('test.png')
         plt.close()
 
     def algorithms_confidence_interval_figure_cases(self):
+        #import ipdb; ipdb.set_trace() # BREAKPOINT
         self.algorithm_confidence_interval_figure(
-            #self.hosts_scenario,
-            self.trace_file,
+            self.hosts_scenario,
+            #self.trace_file,
             'EnergyUnawareStrategyPlacement',
             self.data_eu.data,
             self.x_key, self.y_key,
@@ -285,8 +301,8 @@ class GraphGenerator:
         )
 
         self.algorithm_confidence_interval_figure(
-            #self.hosts_scenario,
-            self.trace_file,
+            self.hosts_scenario,
+            #self.trace_file,
             'OpenOptStrategyPlacement',
             self.data_ksp.data,
             self.x_key, self.y_key,
@@ -295,8 +311,8 @@ class GraphGenerator:
         )
 
         self.algorithm_confidence_interval_figure(
-            #self.hosts_scenario,
-            self.trace_file,
+            self.hosts_scenario,
+            #self.trace_file,
             'EvolutionaryComputationStrategyPlacement',
             self.data_ec.data,
             self.x_key, self.y_key,
@@ -377,11 +393,19 @@ class GraphGenerator:
         self.title = 'Unplaced VMs comparison'
         self.algorithms_comparison_figure_cases()
 
-    def plot_all_confidence_interval_comparison(self, trace_file):
-        self.trace_file = trace_file
+    #def plot_all_confidence_interval_comparison(self, trace_file):
+    def plot_all_confidence_interval_comparison(self, host_scenario):
+        #self.trace_file = trace_file
+        #self.data_eu = self.data['EnergyUnawareStrategyPlacement']
+        #self.data_ksp = self.data['OpenOptStrategyPlacement']
+        #self.data_ec = self.data['EvolutionaryComputationStrategyPlacement']
+
+        #self.hosts_scenario = hosts_scenario
         self.data_eu = self.data['EnergyUnawareStrategyPlacement']
         self.data_ksp = self.data['OpenOptStrategyPlacement']
         self.data_ec = self.data['EvolutionaryComputationStrategyPlacement']
+        #self.data_kspmem = self.data['OpenOptStrategyPlacementMem']
+        #self.data_eccpu = self.data['EvolutionaryComputationStrategyPlacementNet']
 
         self.x_key = '#VM'
         self.x_title = 'Number of VMs'
