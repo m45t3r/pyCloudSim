@@ -60,6 +60,9 @@ class Manager:
         # MBFD is completely different to other methods, since it iterates
         # first in VMs
         if isinstance(self.strategy, ModifiedBestFitDecreasingPlacement):
+            for host in self.pmm.items:
+                host.suspend()
+
             # Sort in decreasing order of CPU utilization
             vms_list = sorted(self.vmm.items, key=operator.itemgetter('cpu'), reverse=True)
             # import pdb; pdb.set_trace() # BREAKPOINT
@@ -75,10 +78,16 @@ class Manager:
                     compute_resources = available_resources
                     log.info('Host {} available resources: {}'.format(host, available_resources))
                     if self.strategy.solve_host(compute_resources):
+                        is_suspended = host.suspended
+                        if is_suspended:
+                            host.wol()
                         host.place_vm(vm)
-                        power = host.estimate_consumed_power()
+                        #power = host.estimate_consumed_power()
+                        power = self.calculate_power_consumed()
                         log.info('Calculated power on host {}: {}'.format(host, power))
                         host.remove_vm(vm)
+                        if is_suspended:
+                            host.suspend()
                         if power < min_power:
                             log.info('New minimal allocation found on host {}'.format(host))
                             allocated_host = host
@@ -86,6 +95,9 @@ class Manager:
                             
                 if allocated_host is not None:
                     log.info('Allocating {} on host {}'.format(vm, allocated_host))
+                    if allocated_host.suspended:
+                        log.info('Wake-on-Lan host {}'.format(allocated_host))
+                        allocated_host.wol()
                     allocated_host.place_vm(vm)
                     available_resources = allocated_host.available_resources()
                     log.info('Host available resources after placement: {}'.format(available_resources))
