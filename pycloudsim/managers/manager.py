@@ -66,16 +66,18 @@ class Manager:
             # Sort in decreasing order of CPU utilization
             vms_list = sorted(self.vmm.items, key=operator.itemgetter('cpu'), reverse=True)
             # import pdb; pdb.set_trace() # BREAKPOINT
+            log.info('*** MBFD simulation with {} VMs'.format(len(vms_list)))
             for vm in vms_list:
                 log.info('--- Placing VM {}'.format(vm))
                 log.info('VM requested resources: {}'.format(vm.resources_to_list()))
                 min_power = float('inf')
                 allocated_host = None
+                host_list = copy.deepcopy(self.pmm.items)
 
-                for host in self.pmm.items:
+                for host in host_list:
                     available_resources = host.available_resources()
                     compute_resources = available_resources
-                    log.info('Host {} available resources: {}'.format(host, available_resources))
+                    #log.info('Host {} available resources: {}'.format(host, available_resources))
                     if self.strategy.solve_host(compute_resources, vm):
                         is_suspended = host.suspended
                         if is_suspended:
@@ -83,31 +85,36 @@ class Manager:
                         host.place_vm(vm)
                         #power = host.estimate_consumed_power()
                         power = self.calculate_power_consumed()
-                        log.info('Calculated power on host {}: {}'.format(host, power))
+                        #log.info('Calculated power on host {}: {}'.format(host, power))
                         host.remove_vm(vm)
                         if is_suspended:
                             host.suspend()
                         if power < min_power:
-                            log.info('New minimal allocation found on host {}'.format(host))
+                            #log.info('New minimal allocation found on host {}'.format(host))
                             allocated_host = host
                             min_power = power
                             
                 if allocated_host is not None:
                     log.info('Allocating {} on host {}'.format(vm, allocated_host))
-                    if allocated_host.suspended:
-                        log.info('Wake-on-Lan host {}'.format(allocated_host))
-                        allocated_host.wol()
-                    #allocated_host.place_vm(vm)
-                    self.place_vms([vm], allocated_host)
+                    i = host_list.index(allocated_host)
                     available_resources = allocated_host.available_resources()
-                    log.info('Host available resources after placement: {}'.format(available_resources))
+                    log.info('Host available resources before placement: {}'.format(self.pmm.items[i]))
+                    if allocated_host.suspended:
+                        log.info('Wake-on-Lan host {}'.format(self.pmm.items[i]))
+                        self.pmm.items[i].wol()
+                    #allocated_host.place_vm(vm)
+                    self.place_vms([vm], self.pmm.items[i])
+                    available_resources = self.pmm.items[i].available_resources()
+                    log.info('Host available resources after placement: {}'.format(self.pmm.items[i]))
                     log.info('Placed VMs: {}'.format(self.placed_vms()))
 
             # Suspend idle PMs
             for host in self.pmm.items:
                 if host.vms == []:
-                    log.info('Suspending host {}'.format(host))
+                    #log.info('Suspending host {}'.format(host))
                     host.suspend()
+                else:
+                    log.info('Allocated VMs on Host {}: {}'.format(host, host.vms_to_str())) 
 
 
         else:
