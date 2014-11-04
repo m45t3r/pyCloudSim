@@ -67,17 +67,16 @@ class Manager:
             vms_list = sorted(self.vmm.items, key=operator.itemgetter('cpu'), reverse=True)
             # import pdb; pdb.set_trace() # BREAKPOINT
             for vm in vms_list:
-                self.vmm.items = [vm]
                 log.info('--- Placing VM {}'.format(vm))
+                log.info('VM requested resources: {}'.format(vm.resources_to_list()))
                 min_power = float('inf')
                 allocated_host = None
-                vms = None
 
                 for host in self.pmm.items:
                     available_resources = host.available_resources()
                     compute_resources = available_resources
                     log.info('Host {} available resources: {}'.format(host, available_resources))
-                    if self.strategy.solve_host(compute_resources):
+                    if self.strategy.solve_host(compute_resources, vm):
                         is_suspended = host.suspended
                         if is_suspended:
                             host.wol()
@@ -98,9 +97,11 @@ class Manager:
                     if allocated_host.suspended:
                         log.info('Wake-on-Lan host {}'.format(allocated_host))
                         allocated_host.wol()
-                    allocated_host.place_vm(vm)
+                    #allocated_host.place_vm(vm)
+                    self.place_vms([vm], allocated_host)
                     available_resources = allocated_host.available_resources()
                     log.info('Host available resources after placement: {}'.format(available_resources))
+                    log.info('Placed VMs: {}'.format(self.placed_vms()))
 
             # Suspend idle PMs
             for host in self.pmm.items:

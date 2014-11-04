@@ -13,16 +13,12 @@ class ModifiedBestFitDecreasingPlacement:
             add_constraints(values, constraint_list)
         )
 
-    def check_constraints(self, item_list):
-        total_cpu = sum(map(operator.itemgetter('cpu'), item_list))
-        total_mem = sum(map(operator.itemgetter('mem'), item_list))
-        total_disk = sum(map(operator.itemgetter('disk'), item_list))
-        total_net = sum(map(operator.itemgetter('net'), item_list))
+    def check_constraints(self, resources):
         return \
-            total_cpu < self.available_cpu and \
-            total_mem < self.available_mem and \
-            total_disk < self.available_disk and \
-            total_net < self.available_net
+            resources.value['cpu'] < self.available_cpu and \
+            resources.value['mem'] < self.available_mem and \
+            resources.value['disk'] < self.available_disk and \
+            resources.value['net'] < self.available_net
 
     def get_vm_objects(self, items_list):
         return items_list
@@ -40,9 +36,9 @@ class ModifiedBestFitDecreasingPlacement:
         self.available_disk = available_resources[2]
         self.available_net = available_resources[3]
 
-    def solve_host(self, upper_bounds):
+    def solve_host(self, upper_bounds, vm):
         # Set current available resources
         self.set_available_resources(upper_bounds)
         # Check if current allocation is valid
         # import pdb; pdb.set_trace()
-        return self.check_constraints(self.vmm.items)
+        return self.check_constraints(vm)
