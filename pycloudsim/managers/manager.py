@@ -63,6 +63,8 @@ class Manager:
             for host in self.pmm.items:
                 host.suspend()
 
+            # Need to create a separate copy or the results are wrong, don't know why
+            host_list = copy.deepcopy(self.pmm.items)
             # Sort in decreasing order of CPU utilization
             vms_list = sorted(self.vmm.items, key=operator.itemgetter('cpu'), reverse=True)
             # import pdb; pdb.set_trace() # BREAKPOINT
@@ -72,7 +74,6 @@ class Manager:
                 log.info('VM requested resources: {}'.format(vm.resources_to_list()))
                 min_power = float('inf')
                 allocated_host = None
-                host_list = copy.deepcopy(self.pmm.items)
 
                 for host in host_list:
                     available_resources = host.available_resources()
@@ -96,15 +97,19 @@ class Manager:
                             
                 if allocated_host is not None:
                     log.info('Allocating {} on host {}'.format(vm, allocated_host))
+                    # Get allocated_host index so we can add it in the self.pmm.items
                     i = host_list.index(allocated_host)
-                    available_resources = allocated_host.available_resources()
-                    log.info('Host available resources before placement: {}'.format(self.pmm.items[i]))
+                    # Checking if allocated_host is suspended, so we can wake up it
                     if allocated_host.suspended:
                         log.info('Wake-on-Lan host {}'.format(self.pmm.items[i]))
+                        # Need to wake-up both the host in host_list and self.pmm.items
+                        allocated_host.wol()
                         self.pmm.items[i].wol()
-                    #allocated_host.place_vm(vm)
+                    # Same thing to allocation
+                    allocated_host.place_vm(vm)
                     self.place_vms([vm], self.pmm.items[i])
-                    available_resources = self.pmm.items[i].available_resources()
+                    # We can get this information from either place, doesn't matter
+                    available_resources = allocated_host.available_resources()
                     log.info('Host available resources after placement: {}'.format(self.pmm.items[i]))
                     log.info('Placed VMs: {}'.format(self.placed_vms()))
 
