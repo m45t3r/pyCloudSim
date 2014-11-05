@@ -2,6 +2,7 @@ from pmmanager import PMManager
 from vmmanager import VMManager
 from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
 from pycloudsim.strategies.mbfd import ModifiedBestFitDecreasingPlacement
+from pycloudsim.strategies.mbfd2 import ModifiedBestFitDecreasing2Placement
 from pycloudsim.common import log
 import pycloudsim.common as common
 import copy
@@ -57,9 +58,9 @@ class Manager:
         del pms_list[number_pms:]
         del vms_list[number_vms:]
 
-        # MBFD is completely different to other methods, since it iterates
-        # first in VMs
-        if isinstance(self.strategy, ModifiedBestFitDecreasingPlacement):
+        # MBFD is completely different to other methods
+        if (isinstance(self.strategy, ModifiedBestFitDecreasingPlacement) or 
+            isinstance(self.strategy, ModifiedBestFitDecreasing2Placement)):
             for host in self.pmm.items:
                 host.suspend()
 
@@ -67,7 +68,6 @@ class Manager:
             host_list = copy.deepcopy(self.pmm.items)
             # Sort in decreasing order of CPU utilization
             vms_list = sorted(self.vmm.items, key=operator.itemgetter('cpu'), reverse=True)
-            # import pdb; pdb.set_trace() # BREAKPOINT
             log.info('*** MBFD simulation with {} VMs'.format(len(vms_list)))
             for vm in vms_list:
                 log.info('--- Placing VM {}'.format(vm))
@@ -78,20 +78,24 @@ class Manager:
                 for host in host_list:
                     available_resources = host.available_resources()
                     compute_resources = available_resources
-                    #log.info('Host {} available resources: {}'.format(host, available_resources))
                     if self.strategy.solve_host(compute_resources, vm):
+                        log.info('Host {} available resources: {}'.format(host, available_resources))
                         is_suspended = host.suspended
                         if is_suspended:
                             host.wol()
                         host.place_vm(vm)
-                        #power = host.estimate_consumed_power()
-                        power = self.calculate_power_consumed()
-                        #log.info('Calculated power on host {}: {}'.format(host, power))
+                        # The original MBFD evaluate the power consumption in each host
+                        if isinstance(self.strategy, ModifiedBestFitDecreasingPlacement):
+                            power = host.estimate_consumed_power()
+                        else:
+                        # While the modified MBFD evaluate the global power consumption
+                            power = self.calculate_power_consumed()
+                        log.info('Calculated power on host {}: {}'.format(host, power))
                         host.remove_vm(vm)
                         if is_suspended:
                             host.suspend()
                         if power < min_power:
-                            #log.info('New minimal allocation found on host {}'.format(host))
+                            log.info('New minimal allocation found on host {}'.format(host))
                             allocated_host = host
                             min_power = power
                             
@@ -116,12 +120,10 @@ class Manager:
             # Suspend idle PMs
             for host in self.pmm.items:
                 if host.vms == []:
-                    #log.info('Suspending host {}'.format(host))
+                    log.info('Suspending host {}'.format(host))
                     host.suspend()
-                else:
-                    log.info('Allocated VMs on Host {}: {}'.format(host, host.vms_to_str())) 
 
-
+        # End of MBFD family, start of the other algorithms
         else:
             for host in self.pmm.items:
                 log.info('--- Placing VMS on host {}'.format(host))

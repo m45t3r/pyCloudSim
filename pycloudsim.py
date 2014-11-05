@@ -209,6 +209,7 @@ class pycloudsim():
         parser.add_argument('-seu', '--simeu', help='Simulate Energy Unaware', required=False)
         parser.add_argument('-sffd', '--simffd', help='Simulate First Fit Decreasing', required=False)
         parser.add_argument('-smbfd', '--simmbfd', help='Simulate Modified Best Fit Decreasing', required=False)
+        parser.add_argument('-smbfd2', '--simmbfd2', help='Simulate Modified Best Fit Decreasing 2', required=False)
         parser.add_argument('-sksp', '--simksp', help='Simulate Iterated-KSP', required=False)
         parser.add_argument('-skspmem', '--simkspmem', help='Simulate Iterated-KSP-CPU', required=False)
         parser.add_argument('-skspnetgraph', '--simkspnetgraph', help='Simulate Iterated-KSP-Net-Graph', required=False)
@@ -227,6 +228,7 @@ class pycloudsim():
         self.simulate_eu = bool(self.get_default_arg(0, args.simeu))
         self.simulate_ffd = bool(self.get_default_arg(0, args.simffd))
         self.simulate_mbfd = bool(self.get_default_arg(0, args.simmbfd))
+        self.simulate_mbfd2 = bool(self.get_default_arg(0, args.simmbfd2))
         self.simulate_ksp = bool(self.get_default_arg(0, args.simksp))
         self.simulate_ksp_mem = bool(self.get_default_arg(0, args.simkspmem))
         self.simulate_ksp_net_graph = bool(self.get_default_arg(0, args.simkspnetgraph))
@@ -299,6 +301,7 @@ class pycloudsim():
         m_eu = copy.deepcopy(m)
         m_ffd = copy.deepcopy(m)
         m_mbfd = copy.deepcopy(m)
+        m_mbfd2 = copy.deepcopy(m)
         m_ksp = copy.deepcopy(m)
         m_ksp_mem = copy.deepcopy(m)
         m_ksp_net_graph = copy.deepcopy(m)
@@ -325,6 +328,13 @@ class pycloudsim():
             strategy = ModifiedBestFitDecreasingPlacement()
             log.info('=== STRATEGY START: {}'.format(strategy.__class__.__name__))
             s.simulate_strategy(strategy, m_mbfd, pms_scenarios, vms_scenarios)
+            log.info('=== STRATEGY END: {}'.format(strategy.__class__.__name__))
+
+        if self.simulate_mbfd2:
+            from pycloudsim.strategies.mbfd2 import ModifiedBestFitDecreasing2Placement
+            strategy = ModifiedBestFitDecreasing2Placement()
+            log.info('=== STRATEGY START: {}'.format(strategy.__class__.__name__))
+            s.simulate_strategy(strategy, m_mbfd2, pms_scenarios, vms_scenarios)
             log.info('=== STRATEGY END: {}'.format(strategy.__class__.__name__))
 
         if self.simulate_ksp:
