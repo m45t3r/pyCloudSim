@@ -73,6 +73,8 @@ class GraphGenerator:
         trans['EvolutionaryComputationStrategyPlacement'] = 'Iterated-EC'
         trans['OpenOptStrategyPlacementMem'] = 'Iterated-KSP-Mem'
         trans['EvolutionaryComputationStrategyPlacementNet'] = 'Iterated-EC-Net'
+        trans['ModifiedBestFitDecreasingPlacement'] = 'MBFD'
+        trans['ModifiedBestFitDecreasing2Placement'] = 'MBFD2'
         return trans[title]
 
     def vms_ticks(self, vms):
@@ -82,7 +84,7 @@ class GraphGenerator:
 
     #def algorithms_comparison_figure(self, hosts_scenario, trace_file, case,
     def algorithms_comparison_figure(self, hosts_scenario, case,
-                 data_ref, data1, data2, data3, data4,
+                 data_ref, data1, data2, data3, data4, data5, data6,
                  x_aspect, y_aspect,
                  x_title, y_title, title):
         x2 = map(int, self.remap_data(data_ref, x_aspect))
@@ -91,6 +93,8 @@ class GraphGenerator:
         y2c = self.remap_data(data2, y_aspect)
         y2d = self.remap_data(data3, y_aspect)
         y2e = self.remap_data(data4, y_aspect)
+        y2f = self.remap_data(data5, y_aspect)
+        y2g = self.remap_data(data6, y_aspect)
 
         #x2 = data_ref[x_aspect]
         #y2a = data_ref[y_aspect]
@@ -104,6 +108,8 @@ class GraphGenerator:
         ax.plot(x2, y2c, color='green', ls='-', marker='s', label=self.legend(data2[0]['strategy']))
         ax.plot(x2, y2d, color='purple', ls='-.', marker='o', label=self.legend(data3[0]['strategy']))
         ax.plot(x2, y2e, color='magenta', ls='-.', marker='s', label=self.legend(data4[0]['strategy']))
+        ax.plot(x2, y2f, color='orange', ls='-.', marker='o', label=self.legend(data5[0]['strategy']))
+        ax.plot(x2, y2g, color='yellow', ls='-.', marker='s', label=self.legend(data6[0]['strategy']))
         #ax.fill(y2a, y2b, alpha=0.3)
         ax.set_xlabel(x_title, fontsize=18)
         ax.set_ylabel(y_title, fontsize=18)
@@ -177,6 +183,8 @@ class GraphGenerator:
             self.data_ec.best_case,
             self.data_kspmem.best_case,
             self.data_eccpu.best_case,
+            self.data_mbfd.best_case,
+            self.data_mbfd2.best_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
             self.title,
@@ -191,6 +199,8 @@ class GraphGenerator:
             self.data_ec.worst_case,
             self.data_kspmem.worst_case,
             self.data_eccpu.worst_case,
+            self.data_mbfd.worst_case,
+            self.data_mbfd2.worst_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
             self.title,
@@ -205,6 +215,8 @@ class GraphGenerator:
             self.data_ec.average_case,
             self.data_kspmem.average_case,
             self.data_eccpu.average_case,
+            self.data_mbfd.average_case,
+            self.data_mbfd2.average_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
             self.title,
@@ -304,6 +316,26 @@ class GraphGenerator:
             self.title,
         )
 
+        self.algorithm_confidence_interval_figure(
+            #self.hosts_scenario,
+            self.trace_file,
+            'ModifiedBestFitDecreasingPlacement',
+            self.data_mbfd.data,
+            self.x_key, self.y_key,
+            self.x_title, self.y_title,
+            self.title,
+        )
+
+        self.algorithm_confidence_interval_figure(
+            #self.hosts_scenario,
+            self.trace_file,
+            'ModifiedBestFitDecreasing2Placement',
+            self.data_mbfd2.data,
+            self.x_key, self.y_key,
+            self.x_title, self.y_title,
+            self.title,
+        )
+
     def remap_data(self, list_dict, key):
         l = {}
         for item in list_dict:
@@ -334,6 +366,8 @@ class GraphGenerator:
         self.data_ec = self.data['EvolutionaryComputationStrategyPlacement']
         self.data_kspmem = self.data['OpenOptStrategyPlacementMem']
         self.data_eccpu = self.data['EvolutionaryComputationStrategyPlacementNet']
+        self.data_mbfd = self.data['ModifiedBestFitDecreasingPlacement']
+        self.data_mbfd2 = self.data['ModifiedBestFitDecreasing2Placement']
         self.x_key = '#VM'
         self.x_title = 'Number of VMs'
 
@@ -382,6 +416,8 @@ class GraphGenerator:
         self.data_eu = self.data['EnergyUnawareStrategyPlacement']
         self.data_ksp = self.data['OpenOptStrategyPlacement']
         self.data_ec = self.data['EvolutionaryComputationStrategyPlacement']
+        self.data_mbfd = self.data['ModifiedBestFitDecreasingPlacement']
+        self.data_mbfd2 = self.data['ModifiedBestFitDecrasing2Placement']
 
         self.x_key = '#VM'
         self.x_title = 'Number of VMs'
@@ -442,6 +478,8 @@ class PlacementGraphGenerator:
         trans['EvolutionaryComputationStrategyPlacement'] = 'Iterated-EC'
         trans['OpenOptStrategyPlacementMem'] = 'Iterated-KSP-Mem'
         trans['EvolutionaryComputationStrategyPlacementNet'] = 'Iterated-EC-Net'
+        trans['ModifiedBestFitDecreasingPlacement'] = 'MBFD'
+        trans['ModifiedBestFitDecreasing2Placement'] = 'MBFD2'
         return trans[title]
 
     def vms_ticks(self, vms):
@@ -576,11 +614,15 @@ class PlacementGraphGenerator:
 #        self.data_kspmem = self.data['OpenOptStrategyPlacementMem'][:N]
         self.data_ec = self.data['EvolutionaryComputationStrategyPlacement'][:N]
         self.data_eccpu = self.data['EvolutionaryComputationStrategyPlacementNet'][:N]
+#        self.data_mbfd = self.data['ModifiedBestFitDecreasingPlacement'][:N]
+        self.data_mbfd2 = self.data['ModifiedBestFitDecreasing2Placement'][:N]
 
         rects1 = plt.bar(ind+width, self.data_ksp, width, color='blue', hatch='o', label='ksp')
 #        rects2 = plt.bar(ind+width*2, self.data_kspmem, width, color='purple', label='kspm')
         rects3 = plt.bar(ind+width*2, self.data_ec, width, color='green', hatch='+', label='ec')
         rects4 = plt.bar(ind+width*3, self.data_eccpu, width, color='magenta', label='ecn')
+#        rects5 = plt.bar(ind+width*3, self.data_eccpu, width, color='orange', label='mbfd')
+        rects6 = plt.bar(ind+width*3, self.data_eccpu, width, color='yellow', label='mbfd2')
 
         #fig, ax = plt.subplots()
         #ax = fig.gca()
@@ -597,7 +639,8 @@ class PlacementGraphGenerator:
         #autolabel(rects3)
 
 #        ax.legend((rects1[0], rects2[0], rects3[0], rects4[0]), ('Iterated-KSP', 'Iterated-KSP-Mem', 'Iterated-EC', 'Iterated-EC-Net'), loc='upper left')
-        ax.legend((rects1[0], rects3[0], rects4[0]), ('Iterated-KSP', 'Iterated-EC', 'Iterated-EC-Net'), loc='upper left')
+#        ax.legend((rects1[0], rects3[0], rects4[0]), ('Iterated-KSP', 'Iterated-EC', 'Iterated-EC-Net'), loc='upper left')
+        ax.legend((rects1[0], rects3[0], rects4[0], rects6[0]), ('Iterated-KSP', 'Iterated-EC', 'Iterated-EC-Net', 'MBFD2'), loc='upper left')
 
         #box = ax.get_position()
         #ax.set_position([box.x0, box.y0 + box.height * 0.2,
@@ -641,6 +684,8 @@ class PlacementGraphGenerator:
             self.data_ec.best_case,
             self.data_kspmem.best_case,
             self.data_eccpu.best_case,
+            self.data_mbfd.best_case,
+            self.data_mbfd2.best_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
             self.title,
@@ -655,6 +700,8 @@ class PlacementGraphGenerator:
             self.data_ec.worst_case,
             self.data_kspmem.worst_case,
             self.data_eccpu.worst_case,
+            self.data_mbfd.worst_case,
+            self.data_mbfd2.worst_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
             self.title,
@@ -669,6 +716,8 @@ class PlacementGraphGenerator:
             self.data_ec.average_case,
             self.data_kspmem.average_case,
             self.data_eccpu.average_case,
+            self.data_mbfd.average_case,
+            self.data_mbfd2.average_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
             self.title,
