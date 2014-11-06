@@ -87,9 +87,9 @@ class Manager:
                         # The original MBFD evaluate the power consumption in each host
                         if isinstance(self.strategy, ModifiedBestFitDecreasingPlacement):
                             power = host.estimate_consumed_power()
-                        else:
                         # While the modified MBFD evaluate the global power consumption
-                            power = self.calculate_power_consumed()
+                        else:
+                            power = self.calculate_power_consumed(host_list)
                         log.info('Calculated power on host {}: {}'.format(host, power))
                         host.remove_vm(vm)
                         if is_suspended:
@@ -170,9 +170,11 @@ class Manager:
                     #print(host)
 
 
-    def calculate_power_consumed(self):
+    def calculate_power_consumed(self, host_list = None):
+        if not host_list:
+            host_list = self.pmm.items
         result = 0
-        for host in self.pmm.items:
+        for host in host_list:
             result += host.estimate_consumed_power()
         return result
 
