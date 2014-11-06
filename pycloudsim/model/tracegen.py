@@ -31,7 +31,7 @@ class FileTraceGenerator(BaseTraceGenerator):
 #            self.lines = f.readlines()
 #            self.cpu = map(int, self.lines)
         self.file_handler = open(self.trace_file)
-        self.values = map(int, self.file_handler.readlines())
+        self.values = map(float, self.file_handler.readlines())
         self.file_handler.close()
         self.counter = 0
         self.index = 0

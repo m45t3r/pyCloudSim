@@ -4,7 +4,7 @@ import time
 import multiprocessing
 
 # I didn't find a better way to do this =(
-upper_bounds = [99, 99, 99, 99]
+upper_bounds = [99.0, 99.0, 99.0, 99.0]
 
 def my_generator(random, args):
     items = args['items']
@@ -25,9 +25,14 @@ def my_evaluator(candidate, args):
 #    constraints = [max(0, totals[c] - 99) for c in ['cpu', 'mem', 'disk', 'net']]
 
     available_resources = calculate_available_resources(totals, upper_bounds)
-    constraints = [max(0, resource) for resource in available_resources]
+    constraints = [max(0.0, resource) for resource in available_resources]
 
-    fitness = totals['weight'] - sum(constraints)
+    fitness = float(totals['weight']) - sum(constraints)
+#    if fitness < 0.0:
+#    if totals['cpu'] > 100.10 and fitness > 0:
+    if sum(constraints) > 0:
+        fitness = -1
+#        import ipdb; ipdb.set_trace() # BREAKPOINT
     #print fitness
     return fitness
 

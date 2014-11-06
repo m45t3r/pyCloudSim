@@ -9,7 +9,7 @@ from openopt import KSP
 def add_constraint(values, constraint):
     # http://stackoverflow.com/questions/5818192/getting-field-names-reflectively-with-python
     # val = getattr(ob, attr)
-    return values[constraint] < 99
+    return values[constraint] < 99.0
 
 def add_constraints(values, constraint_list):
     return [add_constraint(values, constraint) for constraint in constraint_list]

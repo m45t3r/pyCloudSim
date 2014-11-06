@@ -1,6 +1,7 @@
 from pmmanager import PMManager
 from vmmanager import VMManager
 from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
+from pycloudsim.strategies.iteratedec import EvolutionaryComputationStrategyPlacement
 from pycloudsim.common import log
 import pycloudsim.common as common
 import copy
@@ -55,15 +56,17 @@ class Manager:
         vms_list = self.vmm.items
         del pms_list[number_pms:]
         del vms_list[number_vms:]
+        linear_method = common.config['non_linear'].lower() == 'false'
         for host in self.pmm.items:
-#            if number_pms == 100 and number_vms == 64 and host.id == '64':
+            #if number_pms == 100 and number_vms == 64 and host.id == '64':
+#            if number_pms == 100 and number_vms == 64:
+#            if isinstance(self.strategy, EvolutionaryComputationStrategyPlacement):
 #                import ipdb; ipdb.set_trace() # BREAKPOINT
             log.info('--- Placing VMS on host {}'.format(host))
             if self.vmm.items != []:
                 available_resources = host.available_resources()
                 compute_resources = available_resources
                 log.info('Host available resources: {}'.format(available_resources))
-                linear_method = common.config['non_linear'].lower() == 'false'
                 skip = False
                 if linear_method:
                     log.info('LINEAR MODEL OPTIMIZATION (maximizing VMs per host):')
