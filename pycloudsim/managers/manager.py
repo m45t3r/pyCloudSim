@@ -3,6 +3,7 @@ from vmmanager import VMManager
 from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
 from pycloudsim.strategies.mbfd import ModifiedBestFitDecreasingPlacement
 from pycloudsim.strategies.mbfd2 import ModifiedBestFitDecreasing2Placement
+from pycloudsim.strategies.ffd import FirstFitDecreasingPlacement
 from pycloudsim.common import log
 import pycloudsim.common as common
 import copy
@@ -60,7 +61,9 @@ class Manager:
 
         # MBFD is completely different to other methods
         if (isinstance(self.strategy, ModifiedBestFitDecreasingPlacement) or 
-            isinstance(self.strategy, ModifiedBestFitDecreasing2Placement)):
+            isinstance(self.strategy, ModifiedBestFitDecreasing2Placement) or
+            isinstance(self.strategy, FirstFitDecreasingPlacement)):
+            
             for host in self.pmm.items:
                 host.suspend()
 
@@ -80,24 +83,28 @@ class Manager:
                     compute_resources = available_resources
                     if self.strategy.solve_host(compute_resources, vm):
                         log.info('Host {} available resources: {}'.format(host, available_resources))
-                        is_suspended = host.suspended
-                        if is_suspended:
-                            host.wol()
-                        host.place_vm(vm)
-                        # The original MBFD evaluate the power consumption in each host
-                        if isinstance(self.strategy, ModifiedBestFitDecreasingPlacement):
-                            power = host.estimate_consumed_power()
-                        # While the modified MBFD evaluate the global power consumption
-                        else:
-                            power = self.calculate_power_consumed(host_list)
-                        log.info('Calculated power on host {}: {}'.format(host, power))
-                        host.remove_vm(vm)
-                        if is_suspended:
-                            host.suspend()
-                        if power < min_power:
-                            log.info('New minimal allocation found on host {}'.format(host))
+                        if isinstance(self.strategy, FirstFitDecreasingPlacement):
                             allocated_host = host
-                            min_power = power
+                            break
+                        else:
+                            is_suspended = host.suspended
+                            if is_suspended:
+                                host.wol()
+                            host.place_vm(vm)
+                            # The original MBFD evaluate the power consumption in each host
+                            if isinstance(self.strategy, ModifiedBestFitDecreasingPlacement):
+                                power = host.estimate_consumed_power()
+                            # While the modified MBFD evaluate the global power consumption
+                            else:
+                                power = self.calculate_power_consumed(host_list)
+                            log.info('Calculated power on host {}: {}'.format(host, power))
+                            host.remove_vm(vm)
+                            if is_suspended:
+                                host.suspend()
+                            if power < min_power:
+                                log.info('New minimal allocation found on host {}'.format(host))
+                                allocated_host = host
+                                min_power = power
                             
                 if allocated_host is not None:
                     log.info('Allocating {} on host {}'.format(vm, allocated_host))
@@ -114,7 +121,7 @@ class Manager:
                     self.place_vms([vm], self.pmm.items[i])
                     # We can get this information from either place, doesn't matter
                     available_resources = allocated_host.available_resources()
-                    log.info('Host available resources after placement: {}'.format(self.pmm.items[i]))
+                    log.info('Host available resources after placement: {}'.format(available_resources))
                     log.info('Placed VMs: {}'.format(self.placed_vms()))
 
             # Suspend idle PMs

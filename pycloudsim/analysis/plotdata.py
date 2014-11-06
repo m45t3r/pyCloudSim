@@ -75,6 +75,7 @@ class GraphGenerator:
         trans['EvolutionaryComputationStrategyPlacementNet'] = 'Iterated-EC-Net'
         trans['ModifiedBestFitDecreasingPlacement'] = 'MBFD'
         trans['ModifiedBestFitDecreasing2Placement'] = 'MBFD2'
+        trans['FirstFitDecreasingPlacement'] = 'FFD'
         return trans[title]
 
     def vms_ticks(self, vms):
@@ -84,7 +85,7 @@ class GraphGenerator:
 
     #def algorithms_comparison_figure(self, hosts_scenario, trace_file, case,
     def algorithms_comparison_figure(self, hosts_scenario, case,
-                 data_ref, data1, data2, data3, data4, data5, data6,
+                 data_ref, data1, data2, data3, data4, data5, data6, data7,
                  x_aspect, y_aspect,
                  x_title, y_title, title):
         x2 = map(int, self.remap_data(data_ref, x_aspect))
@@ -95,6 +96,7 @@ class GraphGenerator:
         y2e = self.remap_data(data4, y_aspect)
         y2f = self.remap_data(data5, y_aspect)
         y2g = self.remap_data(data6, y_aspect)
+        y2h = self.remap_data(data7, y_aspect)
 
         #x2 = data_ref[x_aspect]
         #y2a = data_ref[y_aspect]
@@ -110,6 +112,7 @@ class GraphGenerator:
         ax.plot(x2, y2e, color='magenta', ls='-.', marker='s', label=self.legend(data4[0]['strategy']))
         ax.plot(x2, y2f, color='orange', ls='-.', marker='o', label=self.legend(data5[0]['strategy']))
         ax.plot(x2, y2g, color='yellow', ls='-.', marker='s', label=self.legend(data6[0]['strategy']))
+        ax.plot(x2, y2h, color='cyan', ls='-.', marker='o', label=self.legend(data7[0]['strategy']))
         #ax.fill(y2a, y2b, alpha=0.3)
         ax.set_xlabel(x_title, fontsize=18)
         ax.set_ylabel(y_title, fontsize=18)
@@ -185,6 +188,7 @@ class GraphGenerator:
             self.data_eccpu.best_case,
             self.data_mbfd.best_case,
             self.data_mbfd2.best_case,
+            self.data_ffd.best_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
             self.title,
@@ -201,6 +205,7 @@ class GraphGenerator:
             self.data_eccpu.worst_case,
             self.data_mbfd.worst_case,
             self.data_mbfd2.worst_case,
+            self.data_ffd.worst_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
             self.title,
@@ -217,6 +222,7 @@ class GraphGenerator:
             self.data_eccpu.average_case,
             self.data_mbfd.average_case,
             self.data_mbfd2.average_case,
+            self.data_ffd.average_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
             self.title,
@@ -336,6 +342,16 @@ class GraphGenerator:
             self.title,
         )
 
+        self.algorithm_confidence_interval_figure(
+            #self.hosts_scenario,
+            self.trace_file,
+            'FirstFitDecreasingPlacement',
+            self.data_ffd.data,
+            self.x_key, self.y_key,
+            self.x_title, self.y_title,
+            self.title,
+        )
+
     def remap_data(self, list_dict, key):
         l = {}
         for item in list_dict:
@@ -368,6 +384,7 @@ class GraphGenerator:
         self.data_eccpu = self.data['EvolutionaryComputationStrategyPlacementNet']
         self.data_mbfd = self.data['ModifiedBestFitDecreasingPlacement']
         self.data_mbfd2 = self.data['ModifiedBestFitDecreasing2Placement']
+        self.data_ffd = self.data['FirstFitDecreasingPlacement']
         self.x_key = '#VM'
         self.x_title = 'Number of VMs'
 
@@ -418,6 +435,7 @@ class GraphGenerator:
         self.data_ec = self.data['EvolutionaryComputationStrategyPlacement']
         self.data_mbfd = self.data['ModifiedBestFitDecreasingPlacement']
         self.data_mbfd2 = self.data['ModifiedBestFitDecrasing2Placement']
+        self.data_ffd = self.data['FirstFitDecreasingPlacement']
 
         self.x_key = '#VM'
         self.x_title = 'Number of VMs'
@@ -480,6 +498,7 @@ class PlacementGraphGenerator:
         trans['EvolutionaryComputationStrategyPlacementNet'] = 'Iterated-EC-Net'
         trans['ModifiedBestFitDecreasingPlacement'] = 'MBFD'
         trans['ModifiedBestFitDecreasing2Placement'] = 'MBFD2'
+        trans['FirstFitDecreasingPlacement'] = 'FFD'
         return trans[title]
 
     def vms_ticks(self, vms):
@@ -686,6 +705,7 @@ class PlacementGraphGenerator:
             self.data_eccpu.best_case,
             self.data_mbfd.best_case,
             self.data_mbfd2.best_case,
+            self.data_ffd.best_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
             self.title,
@@ -702,6 +722,7 @@ class PlacementGraphGenerator:
             self.data_eccpu.worst_case,
             self.data_mbfd.worst_case,
             self.data_mbfd2.worst_case,
+            self.data_ffd.worst_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
             self.title,
@@ -718,6 +739,7 @@ class PlacementGraphGenerator:
             self.data_eccpu.average_case,
             self.data_mbfd.average_case,
             self.data_mbfd2.average_case,
+            self.data_ffd.average_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
             self.title,
