@@ -4,11 +4,13 @@ from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
 from pycloudsim.strategies.mbfd import ModifiedBestFitDecreasingPlacement
 from pycloudsim.strategies.mbfd2 import ModifiedBestFitDecreasing2Placement
 from pycloudsim.strategies.ffd import FirstFitDecreasingPlacement
+from pycloudsim.strategies.iteratedec import EvolutionaryComputationStrategyPlacement
 from pycloudsim.common import log
 import pycloudsim.common as common
 import copy
 import operator
 import logging
+
 log = logging.getLogger(__name__)
 
 class Manager:
@@ -129,16 +131,20 @@ class Manager:
                 if host.vms == []:
                     log.info('Suspending host {}'.format(host))
                     host.suspend()
-
-        # End of MBFD family, start of the other algorithms
+        
+        # End of MBFD family of algorithms
         else:
+            linear_method = common.config['non_linear'].lower() == 'false'
             for host in self.pmm.items:
+                #if number_pms == 100 and number_vms == 64 and host.id == '64':
+    #            if number_pms == 100 and number_vms == 64:
+    #            if isinstance(self.strategy, EvolutionaryComputationStrategyPlacement):
+    #                import ipdb; ipdb.set_trace() # BREAKPOINT
                 log.info('--- Placing VMS on host {}'.format(host))
                 if self.vmm.items != []:
                     available_resources = host.available_resources()
                     compute_resources = available_resources
                     log.info('Host available resources: {}'.format(available_resources))
-                    linear_method = common.config['non_linear'].lower() == 'false'
                     skip = False
                     if linear_method:
                         log.info('LINEAR MODEL OPTIMIZATION (maximizing VMs per host):')
@@ -146,14 +152,9 @@ class Manager:
                         non_linear_optimum = int(common.config['non_linear_optimum'])
                         log.info('NON LINEAR MODEL OPTIMIZATION:')
                         for index in range(0, non_linear_optimum):
-    #                        import ipdb; ipdb.set_trace() # BREAKPOINT
                             optimal_cpu = host.specs.optimal_load().next()['load']
                             if index is not non_linear_optimum - 1:
                                 log.info('Skiping optimum {}'.format(optimal_cpu))
-    #                    optimal_cpu = host.specs.optimal_load().next()['load']
-    #                    optimal_cpu = host.specs.optimal_load().next()['load']
-    #                    optimal_cpu = host.specs.optimal_load().next()['load']
-    #                    optimal_cpu = host.specs.optimal_load().next()['load']
                         skip = host.cpu >= optimal_cpu
                         if not skip:
                             compute_resources[0] = optimal_cpu
@@ -166,16 +167,30 @@ class Manager:
                     if not skip:
                         solution = self.strategy.solve_host(compute_resources)
                         vms = self.strategy.get_vm_objects(solution)
-                        if vms is not None:
+                        if vms != []:
                             self.place_vms(vms, host)
                             available_resources = host.available_resources()
                             log.info('Host available resources after placement: {}'.format(available_resources))
+                        else:
+                            if not isinstance(self.strategy, EnergyUnawareStrategyPlacement):
+                                # Special case when there are still VMs but the CPU
+                                # usage is higher than the otimal_cpu value to be used,
+                                # we allocate the rest
+                                # This is not elegant, me no like this =(. This method
+                                # needs refactoring!!!
+                                log.info('Special case, there are still: {} VMs'.format(len(self.vmm.items)))
+                                log.info('  CPU of VM[0]: {}'.format(self.vmm.items[0].value['cpu']))
+                                compute_resources[0] = 100
+                                log.info('  Incrementing computing resources to: {}'.format(compute_resources))
+                                solution = self.strategy.solve_host(compute_resources)
+                                vms = self.strategy.get_vm_objects(solution)
+                                self.place_vms(vms, host)
+                                available_resources = host.available_resources()
+                                log.info('Host available resources after placement: {}'.format(available_resources))
                 else:
                     if not isinstance(self.strategy, EnergyUnawareStrategyPlacement):
                         host.suspend()
                         log.info('Suspending host: {}'.format(host))
-                    #print(host)
-
 
     def calculate_power_consumed(self, host_list = None):
         if not host_list:
@@ -213,40 +228,3 @@ class Manager:
     def reset(self):
         self.pmm = copy.deepcopy(self.pmm_copy)
         self.vmm = copy.deepcopy(self.vmm_copy)
-
-#    def add_physical_host(self, host):
-#        log.info('add_physical_host {}'.format(host))
-#        self.total_pm += 1
-#        #print('add_physical_host: {}'.format(host))
-#
-#    def add_physical_hosts(self, host=None):
-#        if self.add_physical_hosts_factory:
-#            result = self.add_physical_hosts_factory(
-#                **self.add_physical_hosts_args)
-#            for host in result:
-#                self.add_physical_host(host)
-#                if self.add_physical_hosts_callback:
-#                    self.add_physical_hosts_callback(host)
-#        else:
-#            self.add_physical_host(host)
-
-#    def add_virtual_machine(self, vm):
-#        self.vmm.add_virtual_machine(vm)
-#        self.vm_list += [vm]
-#        self.total_vm += 1
-#        #import ipdb; ipdb.set_trace() # BREAKPOINT
-#        log.info('add_virtual_machine {}'.format(vm))
-#        #print('add_virtual_machine: {}'.format(vm))
-
-#    def add_virtual_machines(self, vm=None):
-#        self.vmm.add_virtual_machines(vm)
-#        if self.add_virtual_machines_factory:
-#            result = self.add_virtual_machines_factory(
-#                **self.add_virtual_machines_args)
-#            for vm in result:
-#                self.add_virtual_machine(vm)
-#                if self.add_virtual_machines_callback:
-#                    self.add_virtual_machines_callback(vm)
-#        else:
-#            import ipdb; ipdb.set_trace() # BREAKPOINT
-#            self.add_virtual_machines(vm)

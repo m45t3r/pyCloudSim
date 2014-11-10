@@ -42,10 +42,10 @@ class PhysicalMachine:
 
     def available_resources(self):
         return [
-            100 - self.cpu,
-            100 - self.mem,
-            100 - self.disk,
-            100 - self.net,
+            100.0 - self.cpu,
+            100.0 - self.mem,
+            100.0 - self.disk,
+            100.0 - self.net,
         ]
 
     def vms_to_str(self):
@@ -89,9 +89,9 @@ class PhysicalMachine:
 
     def estimate_used_cpu(self):
         # Less than 10% => Idle
-        result = 5
+        result = 5.0
         if len(self.vms) is not 0:
-            result = 0
+            result = 0.0
             for vm in self.vms:
                 result += vm['cpu']
         return result
@@ -99,7 +99,7 @@ class PhysicalMachine:
     def estimate_consumed_power(self):
         result = 0
         if self.suspended:
-            result = 5
+            result = 5.0
         else:
             if self.specs is None:
                 # P(cpu) = P_idle + (P_busy - P_idle) x cpu
@@ -118,9 +118,9 @@ class PhysicalMachine:
                     # Idle consumption, when no VMs
                     result = self.specs.specs_by_load[0]['consumption']
                 else:
-                    cpu_tens = int(str(cpu)[-1])
-                    cpu_without_tens = int(str(cpu)[:-1])
-                    bottom_cpu = cpu_without_tens * 10
+                    cpu_tens = cpu - round(cpu/10, 0)*10
+                    cpu_without_tens = (cpu - cpu_tens) / 10
+                    bottom_cpu = round(cpu_without_tens * 10, 0)
                     bottom_consumption = self.specs.specs_by_load[bottom_cpu]['consumption']
                     top_cpu = cpu_without_tens * 10 + 10
                     if top_cpu < 110:

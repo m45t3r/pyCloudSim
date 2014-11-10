@@ -33,7 +33,7 @@ class OpenOptStrategyPlacementMem:
     def gen_costraints(self): #, constraint_list):
         self.constraints = lambda values: (
             values['cpu'] < self.available_cpu,
-            values['mem'] < 200, #self.available_mem,
+            values['mem'] < 200.0, #self.available_mem,
             values['disk'] < self.available_disk,
             values['net'] < self.available_net,
             #add_constraints(values, constraint_list)

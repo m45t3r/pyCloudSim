@@ -168,6 +168,7 @@ def vm_factory(**kwargs):
         vmi.set_net_gen(net_gen)
         result += [vmi]
         log.info('vm_factory: Creating VM {}, with flavor {}'.format(vm_id, vm_flavor))
+        log.info('VM{} -> CPU={} ({})'.format(index, vmi.value['cpu'], vm_trace_cpu))
         #m.add_virtual_machine(vmi)
 #        vmi.start()
     return result

@@ -7,7 +7,7 @@ import math
 import multiprocessing
 
 # I didn't find a better way to do this =(
-upper_bounds = [99, 99, 99, 99]
+upper_bounds = [99.0, 99.0, 99.0, 99.0]
 
 #@functools.total_ordering
 #class Lexicographic(object):
@@ -98,7 +98,7 @@ def my_evaluator(candidate, args):
     totals = {}
     resources = ['cpu', 'mem', 'disk', 'net']
     for metric in ['weight'] + resources:
-        totals[metric] = 0
+        totals[metric] = 0.0
         for i, c in enumerate(candidate):
             if c == 1:
                 totals[metric] += items[i][1][metric]
@@ -108,20 +108,22 @@ def my_evaluator(candidate, args):
     #for c in resources:
     #    constraints += [max(0, totals[c] - 99)]
     available_resources = calculate_available_resources(totals, upper_bounds)
-    constraints = [max(0, resource) for resource in available_resources]
+    constraints = [max(0.0, resource) for resource in available_resources]
 #    logging.debug('my_evaluator: constraints = {}'.format(constraints))
 
     fitness = (totals['weight'] - sum(constraints))
+    if sum(constraints) > 0:
+        fitness = -1
 #    logging.debug('my_evaluator: fitness1 = {}'.format(fitness))
 #    if fitness > 0:
 #        fitness *= math.pow(99 - totals['cpu'], 2)
-    if fitness > 0:
+    if fitness > 0.0:
 #        resource_weights = ((totals['cpu'] * 1) + (totals['mem'] * 7) + \
 #            (totals['disk'] * 1) + (totals['net'] * 1) / 100)
 #        ratio = totals['weight'] / resource_weights
 #        ratio = totals['weight'] * totals['net']  # Heuristic 7
 #        ratio = totals['weight'] * (100 - totals['net'])  # Heuristic 8
-        ratio = math.pow(100 - totals['net'], totals['weight'])  # Heuristic 9
+        ratio = math.pow(100.0 - totals['net'], totals['weight'])  # Heuristic 9
         fitness = ratio
 #        fitness = ratio * 10
 #    logging.debug('my_evaluator: fitness2 = {}\n'.format(fitness))
