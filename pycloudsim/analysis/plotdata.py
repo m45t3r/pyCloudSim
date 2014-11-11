@@ -456,7 +456,7 @@ class GraphGenerator:
         self.data_ksp = self.data['OpenOptStrategyPlacement']
         self.data_ec = self.data['EvolutionaryComputationStrategyPlacement']
         self.data_mbfd = self.data['ModifiedBestFitDecreasingPlacement']
-        self.data_mbfd2 = self.data['ModifiedBestFitDecrasing2Placement']
+        self.data_mbfd2 = self.data['ModifiedBestFitDecreasing2Placement']
         self.data_ffd = self.data['FirstFitDecreasingPlacement']
         #self.data_kspmem = self.data['OpenOptStrategyPlacementMem']
         #self.data_eccpu = self.data['EvolutionaryComputationStrategyPlacementNet']
