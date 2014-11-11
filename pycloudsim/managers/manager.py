@@ -1,8 +1,8 @@
 from pmmanager import PMManager
 from vmmanager import VMManager
 from pycloudsim.strategies.energyunaware import EnergyUnawareStrategyPlacement
-from pycloudsim.strategies.mbfd import ModifiedBestFitDecreasingPlacement
-from pycloudsim.strategies.mbfd2 import ModifiedBestFitDecreasing2Placement
+from pycloudsim.strategies.pabfd import PowerAwareBestFitDecreasingPlacement
+from pycloudsim.strategies.gpabfd import GlobalPowerAwareBestFitDecreasingPlacement
 from pycloudsim.strategies.ffd import FirstFitDecreasingPlacement
 from pycloudsim.strategies.iteratedec import EvolutionaryComputationStrategyPlacement
 from pycloudsim.common import log
@@ -61,9 +61,9 @@ class Manager:
         del pms_list[number_pms:]
         del vms_list[number_vms:]
 
-        # MBFD is completely different to other methods
-        if (isinstance(self.strategy, ModifiedBestFitDecreasingPlacement) or 
-            isinstance(self.strategy, ModifiedBestFitDecreasing2Placement) or
+        # Fit Decreasing (FD) family of algorithms iterates firstly in the vm list
+        if (isinstance(self.strategy, PowerAwareBestFitDecreasingPlacement) or 
+            isinstance(self.strategy, GlobalPowerAwareBestFitDecreasingPlacement) or
             isinstance(self.strategy, FirstFitDecreasingPlacement)):
             
             for host in self.pmm.items:
@@ -93,10 +93,10 @@ class Manager:
                             if is_suspended:
                                 host.wol()
                             host.place_vm(vm)
-                            # The original MBFD evaluate the power consumption in each host
-                            if isinstance(self.strategy, ModifiedBestFitDecreasingPlacement):
+                            # The PABFD evaluate the power consumption in each host
+                            if isinstance(self.strategy, PowerAwareBestFitDecreasingPlacement):
                                 power = host.estimate_consumed_power()
-                            # While the modified MBFD evaluate the global power consumption
+                            # While the GPABFD evaluate the global power consumption
                             else:
                                 power = self.calculate_power_consumed(host_list)
                             log.info('Calculated power on host {}: {}'.format(host, power))
@@ -132,7 +132,7 @@ class Manager:
                     log.info('Suspending host {}'.format(host))
                     host.suspend()
         
-        # End of MBFD family of algorithms
+        # Non-FD algorithms works differently, iterating in each host firstly
         else:
             linear_method = common.config['non_linear'].lower() == 'false'
             for host in self.pmm.items:

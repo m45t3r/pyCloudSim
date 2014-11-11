@@ -1,5 +1,3 @@
-import operator
-
 class FirstFitDecreasingPlacement:
     def __init__(self):
         self.constraints = None

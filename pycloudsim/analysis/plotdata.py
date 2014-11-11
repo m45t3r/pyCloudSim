@@ -74,8 +74,8 @@ class GraphGenerator:
         trans['EvolutionaryComputationStrategyPlacement'] = 'Iterated-EC'
         trans['OpenOptStrategyPlacementMem'] = 'Iterated-KSP-Mem'
         trans['EvolutionaryComputationStrategyPlacementNet'] = 'Iterated-EC-Net'
-        trans['ModifiedBestFitDecreasingPlacement'] = 'MBFD'
-        trans['ModifiedBestFitDecreasing2Placement'] = 'MBFD2'
+        trans['PowerAwareBestFitDecreasingPlacement'] = 'PABFD'
+        trans['GlobalPowerAwareBestFitDecreasingPlacement'] = 'GPABFD'
         trans['FirstFitDecreasingPlacement'] = 'FFD'
         return trans[title]
 
@@ -187,8 +187,8 @@ class GraphGenerator:
             self.data_ec.best_case,
             self.data_kspmem.best_case,
             self.data_eccpu.best_case,
-            self.data_mbfd.best_case,
-            self.data_mbfd2.best_case,
+            self.data_pabfd.best_case,
+            self.data_gpabfd.best_case,
             self.data_ffd.best_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
@@ -204,8 +204,8 @@ class GraphGenerator:
             self.data_ec.worst_case,
             self.data_kspmem.worst_case,
             self.data_eccpu.worst_case,
-            self.data_mbfd.worst_case,
-            self.data_mbfd2.worst_case,
+            self.data_pabfd.worst_case,
+            self.data_gpabfd.worst_case,
             self.data_ffd.worst_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
@@ -221,8 +221,8 @@ class GraphGenerator:
             self.data_ec.average_case,
             self.data_kspmem.average_case,
             self.data_eccpu.average_case,
-            self.data_mbfd.average_case,
-            self.data_mbfd2.average_case,
+            self.data_pabfd.average_case,
+            self.data_gpabfd.average_case,
             self.data_ffd.average_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
@@ -341,8 +341,8 @@ class GraphGenerator:
         self.algorithm_confidence_interval_figure(
             #self.hosts_scenario,
             self.trace_file,
-            'ModifiedBestFitDecreasingPlacement',
-            self.data_mbfd.data,
+            'PowerAwareBestFitDecreasingPlacement',
+            self.data_pabfd.data,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
             self.title,
@@ -351,8 +351,8 @@ class GraphGenerator:
         self.algorithm_confidence_interval_figure(
             #self.hosts_scenario,
             self.trace_file,
-            'ModifiedBestFitDecreasing2Placement',
-            self.data_mbfd2.data,
+            'GlobalPowerAwareBestFitDecreasingPlacement',
+            self.data_gpabfd.data,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
             self.title,
@@ -398,8 +398,8 @@ class GraphGenerator:
         self.data_ec = self.data['EvolutionaryComputationStrategyPlacement']
         self.data_kspmem = self.data['OpenOptStrategyPlacementMem']
         self.data_eccpu = self.data['EvolutionaryComputationStrategyPlacementNet']
-        self.data_mbfd = self.data['ModifiedBestFitDecreasingPlacement']
-        self.data_mbfd2 = self.data['ModifiedBestFitDecreasing2Placement']
+        self.data_pabfd = self.data['PowerAwareBestFitDecreasingPlacement']
+        self.data_gpabfd = self.data['GlobalPowerAwareBestFitDecreasingPlacement']
         self.data_ffd = self.data['FirstFitDecreasingPlacement']
         self.x_key = '#VM'
         self.x_title = 'Number of VMs'
@@ -455,8 +455,8 @@ class GraphGenerator:
         self.data_eu = self.data['EnergyUnawareStrategyPlacement']
         self.data_ksp = self.data['OpenOptStrategyPlacement']
         self.data_ec = self.data['EvolutionaryComputationStrategyPlacement']
-        self.data_mbfd = self.data['ModifiedBestFitDecreasingPlacement']
-        self.data_mbfd2 = self.data['ModifiedBestFitDecreasing2Placement']
+        self.data_pabfd = self.data['PowerAwareBestFitDecreasingPlacement']
+        self.data_gpabfd = self.data['GlobalPowerAwareBestFitDecreasingPlacement']
         self.data_ffd = self.data['FirstFitDecreasingPlacement']
         #self.data_kspmem = self.data['OpenOptStrategyPlacementMem']
         #self.data_eccpu = self.data['EvolutionaryComputationStrategyPlacementNet']
@@ -520,8 +520,8 @@ class PlacementGraphGenerator:
         trans['EvolutionaryComputationStrategyPlacement'] = 'Iterated-EC'
         trans['OpenOptStrategyPlacementMem'] = 'Iterated-KSP-Mem'
         trans['EvolutionaryComputationStrategyPlacementNet'] = 'Iterated-EC-Net'
-        trans['ModifiedBestFitDecreasingPlacement'] = 'MBFD'
-        trans['ModifiedBestFitDecreasing2Placement'] = 'MBFD2'
+        trans['PowerAwareBestFitDecreasingPlacement'] = 'PABFD'
+        trans['GlobalPowerAwareBestFitDecreasingPlacement'] = 'GPABFD'
         trans['FirstFitDecreasingPlacement'] = 'FFD'
         return trans[title]
 
@@ -657,15 +657,15 @@ class PlacementGraphGenerator:
 #        self.data_kspmem = self.data['OpenOptStrategyPlacementMem'][:N]
         self.data_ec = self.data['EvolutionaryComputationStrategyPlacement'][:N]
         self.data_eccpu = self.data['EvolutionaryComputationStrategyPlacementNet'][:N]
-#        self.data_mbfd = self.data['ModifiedBestFitDecreasingPlacement'][:N]
-        self.data_mbfd2 = self.data['ModifiedBestFitDecreasing2Placement'][:N]
+        self.data_pabfd = self.data['PowerAwareBestFitDecreasingPlacement'][:N]
+        self.data_gpabfd = self.data['GlobalPowerAwareBestFitDecreasingPlacement'][:N]
 
         rects1 = plt.bar(ind+width, self.data_ksp, width, color='blue', hatch='o', label='ksp')
 #        rects2 = plt.bar(ind+width*2, self.data_kspmem, width, color='purple', label='kspm')
         rects3 = plt.bar(ind+width*2, self.data_ec, width, color='green', hatch='+', label='ec')
         rects4 = plt.bar(ind+width*3, self.data_eccpu, width, color='magenta', label='ecn')
-#        rects5 = plt.bar(ind+width*3, self.data_eccpu, width, color='orange', label='mbfd')
-        rects6 = plt.bar(ind+width*3, self.data_eccpu, width, color='yellow', label='mbfd2')
+        rects5 = plt.bar(ind+width*3, self.data_eccpu, width, color='orange', label='pabfd')
+        rects6 = plt.bar(ind+width*3, self.data_eccpu, width, color='yellow', label='gpabfd')
 
         #fig, ax = plt.subplots()
         #ax = fig.gca()
@@ -727,8 +727,8 @@ class PlacementGraphGenerator:
             self.data_ec.best_case,
             self.data_kspmem.best_case,
             self.data_eccpu.best_case,
-            self.data_mbfd.best_case,
-            self.data_mbfd2.best_case,
+            self.data_pabfd.best_case,
+            self.data_gpabfd.best_case,
             self.data_ffd.best_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
@@ -744,8 +744,8 @@ class PlacementGraphGenerator:
             self.data_ec.worst_case,
             self.data_kspmem.worst_case,
             self.data_eccpu.worst_case,
-            self.data_mbfd.worst_case,
-            self.data_mbfd2.worst_case,
+            self.data_pabfd.worst_case,
+            self.data_gpabfd.worst_case,
             self.data_ffd.worst_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,
@@ -761,8 +761,8 @@ class PlacementGraphGenerator:
             self.data_ec.average_case,
             self.data_kspmem.average_case,
             self.data_eccpu.average_case,
-            self.data_mbfd.average_case,
-            self.data_mbfd2.average_case,
+            self.data_pabfd.average_case,
+            self.data_gpabfd.average_case,
             self.data_ffd.average_case,
             self.x_key, self.y_key,
             self.x_title, self.y_title,

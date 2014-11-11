@@ -1,6 +1,4 @@
-import operator
-
-class ModifiedBestFitDecreasing2Placement:
+class GlobalPowerAwareBestFitDecreasingPlacement:
     def __init__(self):
         self.constraints = None
         self.items = None
