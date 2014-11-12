@@ -9,6 +9,10 @@ from pycloudsim.common import log
 import pycloudsim.common as common
 import copy
 import operator
+import csv
+import datetime
+import time
+import os
 import logging
 
 log = logging.getLogger(__name__)
@@ -21,6 +25,8 @@ class Manager:
         self.vmm = VMManager()
         self.pmm_copy = None
         self.vmm_copy = None
+        self.placement_csv_fileh = None
+        self.placement_csv = None
 
     def set_vm_distributor(self, algorithm, manager):
         algorithm(manager)
@@ -40,7 +46,19 @@ class Manager:
             print('{}'.format(host))
             resources = vm.resources_to_list()
             power = host.estimate_consumed_power()
+            available = host.available_resources()
             log.info('  + VM {} resources: {} (power: {})'.format(vm, resources, power))
+            self.placement_csv.writerow(['H' + host.id.zfill(3),
+                                         'VM' + vm.id.zfill(3),
+                                         vm['cpu'],
+                                         vm['mem'],
+                                         vm['disk'],
+                                         vm['net'],
+                                         available[0],
+                                         available[1],
+                                         available[2],
+                                         available[3],
+                                         power])
             i += 1
         self.vmm.items_remove(vms)
 
@@ -60,7 +78,21 @@ class Manager:
         vms_list = self.vmm.items
         del pms_list[number_pms:]
         del vms_list[number_vms:]
+        linear_method = common.config['non_linear'].lower() == 'false'
 
+        stamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d-%H%M%S')
+        placement_csv_filename = 'placement-{}-{}-{}.csv'.\
+            format(self.strategy.__class__.__name__, str(number_pms).zfill(3), stamp)
+        full_filename = os.path.join(common.config['output_path'], placement_csv_filename)
+        self.placement_csv_fileh = open(full_filename, 'w')
+        self.placement_csv = csv.writer(self.placement_csv_fileh, delimiter='\t')
+        self.placement_csv.writerow(['Host', 'VM', 'CPU', 'Mem', 'Disk', 'net',
+                                     'AvailableCPU', 'AvailableMem',
+                                     'AvailableDisk', 'AvailableNet',
+                                     'IncrementalPower'])
+
+        # FIXME: the best way to do this would be to give more freedom to algorithm
+        # to iterates between host, vms or not at all.
         # Fit Decreasing (FD) family of algorithms iterates firstly in the vm list
         if (isinstance(self.strategy, PowerAwareBestFitDecreasingPlacement) or 
             isinstance(self.strategy, GlobalPowerAwareBestFitDecreasingPlacement) or
@@ -128,16 +160,9 @@ class Manager:
                     available_resources = allocated_host.available_resources()
                     log.info('Host available resources after placement: {}'.format(available_resources))
                     log.info('Placed VMs: {}'.format(self.placed_vms()))
-
-            # Suspend idle PMs
-            for host in self.pmm.items:
-                if host.vms == []:
-                    log.info('Suspending host {}'.format(host))
-                    host.suspend()
         
         # Non-FD algorithms works differently, iterating in each host firstly
         else:
-            linear_method = common.config['non_linear'].lower() == 'false'
             for host in self.pmm.items:
                 #if number_pms == 100 and number_vms == 64 and host.id == '64':
     #            if number_pms == 100 and number_vms == 64:
@@ -194,6 +219,7 @@ class Manager:
                     if not isinstance(self.strategy, EnergyUnawareStrategyPlacement):
                         host.suspend()
                         log.info('Suspending host: {}'.format(host))
+        #self.placement_csv_fileh.close()
 
     def calculate_power_consumed(self, host_list = None):
         if not host_list:
