@@ -5,6 +5,10 @@ from pycloudsim.strategies.iteratedec import EvolutionaryComputationStrategyPlac
 from pycloudsim.common import log
 import pycloudsim.common as common
 import copy
+import csv
+import datetime
+import time
+import os
 import logging
 
 log = logging.getLogger(__name__)
@@ -17,6 +21,8 @@ class Manager:
         self.vmm = VMManager()
         self.pmm_copy = None
         self.vmm_copy = None
+        self.placement_csv_fileh = None
+        self.placement_csv = None
 
     def set_vm_distributor(self, algorithm, manager):
         algorithm(manager)
@@ -36,7 +42,19 @@ class Manager:
             print('{}'.format(host))
             resources = vm.resources_to_list()
             power = host.estimate_consumed_power()
+            available = host.available_resources()
             log.info('  + VM {} resources: {} (power: {})'.format(vm, resources, power))
+            self.placement_csv.writerow(['H' + host.id.zfill(3),
+                                         'VM' + vm.id.zfill(3),
+                                         vm['cpu'],
+                                         vm['mem'],
+                                         vm['disk'],
+                                         vm['net'],
+                                         available[0],
+                                         available[1],
+                                         available[2],
+                                         available[3],
+                                         power])
             i += 1
         self.vmm.items_remove(vms)
 
@@ -57,6 +75,18 @@ class Manager:
         del pms_list[number_pms:]
         del vms_list[number_vms:]
         linear_method = common.config['non_linear'].lower() == 'false'
+
+        stamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d-%H%M%S')
+        placement_csv_filename = 'placement-{}-{}-{}.csv'.\
+            format(self.strategy.__class__.__name__, str(number_pms).zfill(3), stamp)
+        full_filename = os.path.join(common.config['output_path'], placement_csv_filename)
+        self.placement_csv_fileh = open(full_filename, 'w')
+        self.placement_csv = csv.writer(self.placement_csv_fileh, delimiter='\t')
+        self.placement_csv.writerow(['Host', 'VM', 'CPU', 'Mem', 'Disk', 'net',
+                                     'AvailableCPU', 'AvailableMem',
+                                     'AvailableDisk', 'AvailableNet',
+                                     'IncrementalPower'])
+
         for host in self.pmm.items:
             #if number_pms == 100 and number_vms == 64 and host.id == '64':
 #            if number_pms == 100 and number_vms == 64:
@@ -113,6 +143,7 @@ class Manager:
                 if not isinstance(self.strategy, EnergyUnawareStrategyPlacement):
                     host.suspend()
                     log.info('Suspending host: {}'.format(host))
+        #self.placement_csv_fileh.close()
 
     def calculate_power_consumed(self):
         result = 0
