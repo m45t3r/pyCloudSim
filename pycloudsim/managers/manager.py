@@ -89,17 +89,20 @@ class Manager:
                             allocated_host = host
                             break
                         else:
+                            current_power = host.estimate_consumed_power()
+                            log.info('Current power on host {}: {}'.format(host, current_power))
                             is_suspended = host.suspended
                             if is_suspended:
                                 host.wol()
+                            # The PABFD evaluate the increase in power consumption in each host
                             host.place_vm(vm)
-                            # The PABFD evaluate the power consumption in each host
                             if isinstance(self.strategy, PowerAwareBestFitDecreasingPlacement):
-                                power = host.estimate_consumed_power()
-                            # While the GPABFD evaluate the global power consumption
+                                power = host.estimate_consumed_power() - current_power
+                                log.info('Power increase on host {}: {}'.format(host, power))
+                            # While the GPABFD evaluate the global power consumption after allocation
                             else:
                                 power = self.calculate_power_consumed(host_list)
-                            log.info('Calculated power on host {}: {}'.format(host, power))
+                                log.info('Global power after allocation on host {}: {}'.format(host, power))
                             host.remove_vm(vm)
                             if is_suspended:
                                 host.suspend()
